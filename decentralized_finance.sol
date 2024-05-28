@@ -19,7 +19,7 @@ contract DecentralizedFinance is ERC20 {
         bool isBasedNft;
         IERC721 nftContract;
         uint256 nftId;
-        uint256 repaidAmount; 
+        uint256 repaidAmount;
     }
 
     mapping(uint256 => Loan) public loans;
@@ -41,7 +41,12 @@ contract DecentralizedFinance is ERC20 {
         _;
     }
 
+    function getDexSwapRate() public view returns (uint256) {
+        return dexSwapRate;
+    }
+
     function buyDex() external payable {
+        require(msg.value > 0, "You need to send some ETH");
         uint256 dexAmount = msg.value / dexSwapRate;
         _transfer(address(this), msg.sender, dexAmount);
         balance += msg.value;
@@ -88,12 +93,11 @@ contract DecentralizedFinance is ERC20 {
         emit LoanRepaid(msg.sender, weiAmount, loanId);
     }
 
-
     function getBalance() public view returns (uint256) {
         return address(this).balance;
     }
 
-    function setDexSwapRate(uint256 rate) external {
+    function setDexSwapRate(uint256 rate) external onlyOwner {
         dexSwapRate = rate;
     }
 
@@ -120,19 +124,20 @@ contract DecentralizedFinance is ERC20 {
     }
 
     function loanByNft(IERC721 nftContract, uint256 nftId) external {
-    for (uint256 i = 0; i < loanCounter; i++) {
-        Loan storage loan2 = loans[i];
-        if (address(loan2.nftContract) == address(nftContract) && loan2.nftId == nftId && loan2.lender == address(0)) {
-            loan2.lender = msg.sender;
-            _transfer(msg.sender, address(this), loan2.amount / dexSwapRate);
-            payable(loan2.borrower).transfer(loan2.amount);
-            
-            emit LoanCreated(loan2.borrower, loan2.amount, loan2.deadline);
-            
-            break;
+        for (uint256 i = 0; i < loanCounter; i++) {
+            Loan storage loan2 = loans[i];
+            if (address(loan2.nftContract) == address(nftContract) && loan2.nftId == nftId && loan2.lender == address(0)) {
+                loan2.lender = msg.sender;
+                _transfer(msg.sender, address(this), loan2.amount / dexSwapRate);
+                payable(loan2.borrower).transfer(loan2.amount);
+                
+                emit LoanCreated(loan2.borrower, loan2.amount, loan2.deadline);
+                
+                break;
+            }
         }
     }
-}
+
     function checkLoan(uint256 loanId) external {
         Loan storage checkedLoan = loans[loanId];
         if (block.timestamp > checkedLoan.deadline && checkedLoan.amount > 0) {

@@ -1,13 +1,14 @@
+import { defi_abi } from "./abi_decentralized_finance.js";
+import { nft_abi } from "./abi_nft.js";
+
 const web3 = new Web3(window.ethereum);
 
-// the part is related to the DecentralizedFinance smart contract
-const defi_contractAddress = "0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8";
-import { defi_abi } from "./abi_decentralized_finance.js";
+// Parte relacionada ao contrato inteligente DecentralizedFinance
+const defi_contractAddress = "0x358AA13c52544ECCEF6B0ADD0f801012ADAD5eE3";
 const defi_contract = new web3.eth.Contract(defi_abi, defi_contractAddress);
 
-// the part is related to the SimpleNFT smart contract
-const nft_contractAddress = "0xf8e81D47203A594245E36C48e151709F0C19fBe8";
-import { nft_abi } from "./abi_nft.js";
+// Parte relacionada ao contrato inteligente SimpleNFT
+const nft_contractAddress = "0x9D7f74d0C41E726EC95884E0e97Fa6129e3b5E99";
 const nft_contract = new web3.eth.Contract(nft_abi, nft_contractAddress);
 
 async function connectMetaMask() {
@@ -35,10 +36,8 @@ async function listenToLoanCreation() {
         .on('data', async function(event) {
             console.log("New loan created:", event.returnValues);
 
-            // Extract relevant information from the event
             const { borrower, amount, deadline } = event.returnValues;
 
-            // Update UI to display the newly created loan
             const loanElement = document.createElement('div');
             loanElement.classList.add('loan-item');
             loanElement.innerHTML = `
@@ -48,8 +47,6 @@ async function listenToLoanCreation() {
                 <p>Deadline: ${new Date(deadline * 1000).toLocaleString()}</p>
             `;
             document.getElementById('loan-list').appendChild(loanElement);
-
-            // You can also trigger other actions, such as updating loan lists or notifications
         })
         .on('error', function(error) {
             console.error("Error listening to loan creation:", error);
@@ -58,10 +55,8 @@ async function listenToLoanCreation() {
 
 async function checkLoanStatus(loanId) {
     try {
-        // Call the smart contract function to check the status of the loan with the provided ID
         const loanStatus = await defi_contract.methods.checkLoan(loanId).call();
         console.log("Loan status:", loanStatus);
-        // Display or handle the loan status as needed
     } catch (error) {
         console.error("Error checking loan status:", error);
     }
@@ -69,15 +64,12 @@ async function checkLoanStatus(loanId) {
 
 async function buyDex() {
     try {
-        // Prompt the user to input the amount of DEX tokens they want to purchase
         const dexAmount = prompt("Enter the amount of DEX tokens to purchase:");
-
-        // Calculate the corresponding ETH amount based on the swap rate (assuming you have a function to retrieve the swap rate)
         const swapRate = await defi_contract.methods.getDexSwapRate().call();
         const ethAmount = dexAmount * swapRate;
 
-        // Transfer the calculated ETH amount to the smart contract in exchange for the DEX tokens
-        await defi_contract.methods.buyDex().send({ value: ethAmount });
+        const accounts = await web3.eth.getAccounts();
+        await defi_contract.methods.buyDex().send({ from: accounts[0], value: ethAmount });
 
         console.log(`${dexAmount} DEX tokens purchased for ${ethAmount} ETH.`);
     } catch (error) {
