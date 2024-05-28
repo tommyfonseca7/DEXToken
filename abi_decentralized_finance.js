@@ -522,15 +522,16 @@ export const defi_abi = [
 		"type": "function"
 	},
 	{
+		"constant": true,
 		"inputs": [],
 		"name": "getDexSwapRate",
 		"outputs": [
 			{
-				"internalType": "uint256",
 				"name": "",
 				"type": "uint256"
 			}
 		],
+		"payable": false,
 		"stateMutability": "view",
 		"type": "function"
 	},

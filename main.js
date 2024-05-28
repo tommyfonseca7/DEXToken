@@ -2,14 +2,17 @@ import { defi_abi } from "./abi_decentralized_finance.js";
 import { nft_abi } from "./abi_nft.js";
 
 const web3 = new Web3(window.ethereum);
+// const web3 = new Web3(new Web3.providers.HttpProvider('http://127.0.0.1:8545'));
 
 // Parte relacionada ao contrato inteligente DecentralizedFinance
-const defi_contractAddress = "0x358AA13c52544ECCEF6B0ADD0f801012ADAD5eE3";
+const defi_contractAddress = "0x5FD6eB55D12E759a21C09eF703fe0CBa1DC9d88D";
 const defi_contract = new web3.eth.Contract(defi_abi, defi_contractAddress);
 
 // Parte relacionada ao contrato inteligente SimpleNFT
 const nft_contractAddress = "0x9D7f74d0C41E726EC95884E0e97Fa6129e3b5E99";
 const nft_contract = new web3.eth.Contract(nft_abi, nft_contractAddress);
+
+
 
 async function connectMetaMask() {
     if (window.ethereum) {
@@ -18,6 +21,10 @@ async function connectMetaMask() {
                 method: "eth_requestAccounts",
             });
             console.log("Connected account:", accounts[0]);
+
+            checkConnection();
+            checkGetDexSwapRate();
+
         } catch (error) {
             console.error("Error connecting to MetaMask:", error);
         }
@@ -25,6 +32,38 @@ async function connectMetaMask() {
         console.error("MetaMask not found. Please install the MetaMask extension.");
     }
 }
+
+
+
+/*****************
+ * 
+ * DEBUG 
+ * 
+ * 
+ */
+
+async function checkConnection() {
+    try {
+        const network = await web3.eth.net.getNetworkType();
+        console.log(`Connected to network: ${network}`);
+    } catch (error) {
+        console.error("Error checking network:", error);
+    }
+}
+async function checkGetDexSwapRate() {
+    try {
+        const swapRate = await defi_contract.methods.getDexSwapRate().call();
+        console.log(`DEX Swap Rate: ${swapRate}`);
+    } catch (error) {
+        console.error("Error getting DEX Swap Rate:", error);
+    }
+}
+
+/*************
+ * END
+ */
+
+
 
 async function setRateEthToDex(newRate) {
     const accounts = await web3.eth.getAccounts();
@@ -65,7 +104,12 @@ async function checkLoanStatus(loanId) {
 async function buyDex() {
     try {
         const dexAmount = prompt("Enter the amount of DEX tokens to purchase:");
+        if (!dexAmount || isNaN(dexAmount) || dexAmount <= 0) {
+            throw new Error("Invalid DEX amount");
+        }
+
         const swapRate = await defi_contract.methods.getDexSwapRate().call();
+        console.log(`Retrieved Swap Rate: ${swapRate}`); // Log para verificação
         const ethAmount = dexAmount * swapRate;
 
         const accounts = await web3.eth.getAccounts();
