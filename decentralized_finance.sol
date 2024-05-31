@@ -30,7 +30,7 @@ contract DecentralizedFinance is ERC20 {
     constructor() ERC20("DEX", "DEX") {
         owner = msg.sender;
         maxLoanDuration = 30 days;
-        dexSwapRate = 1 ether; // Example initial rate
+        dexSwapRate = 0.000000000000000001 ether; // Example initial rate
         balance = 0;
         loanCounter = 0;
         _mint(address(this), 10**18);
@@ -54,6 +54,7 @@ contract DecentralizedFinance is ERC20 {
 
     function sellDex(uint256 dexAmount) external {
         uint256 ethAmount = dexAmount * dexSwapRate;
+
         require(address(this).balance >= ethAmount, "Not enough ETH in contract");
         _transfer(msg.sender, address(this), dexAmount);
         payable(msg.sender).transfer(ethAmount);

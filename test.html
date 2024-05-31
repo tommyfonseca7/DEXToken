@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Decentralized Finance DApp</title>
+  </head>
+  <body>
+    <h1>Decentralized Finance DApp</h1>
+    <button onclick="connectWallet()">Connect Wallet</button>
+    <div>
+      <h2>Buy DEX</h2>
+      <input type="number" id="ethAmount" placeholder="Amount in ETH" />
+      <button onclick="buyDex()">Buy DEX</button>
+    </div>
+    <div>
+      <h2>Sell DEX</h2>
+      <input type="number" id="dexAmount" placeholder="Amount in DEX" />
+      <button onclick="sellDex()">Sell DEX</button>
+    </div>
+    <div>
+      <h2>Contract Balance</h2>
+      <p id="balance">Loading...</p>
+      <button onclick="fetchBalance()">Refresh Balance</button>
+    </div>
+
+    <!-- Include Web3.js from a CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <!-- Your custom JavaScript file -->
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
