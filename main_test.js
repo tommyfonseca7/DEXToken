@@ -4,7 +4,7 @@ import { nft_abi } from "./abi_nft.js";
 const web3 = new Web3(window.ethereum);
 
 // Parte relacionada ao contrato inteligente DecentralizedFinance
-const defi_contractAddress = "0x0fC5025C764cE34df352757e82f7B5c4Df39A836"; // Certifique-se de que este é o endereço correto
+const defi_contractAddress = "0x0813d4a158d06784FDB48323344896B2B1aa0F85"; // Certifique-se de que este é o endereço correto
 const defi_contract = new web3.eth.Contract(defi_abi, defi_contractAddress);
 
 console.log(defi_contract);
@@ -16,6 +16,10 @@ async function connectMetaMask() {
                 method: "eth_requestAccounts",
             });
             console.log("Connected account:", accounts[0]);
+
+            console.log("Contract ABI: ", defi_contract.options.jsonInterface);
+            console.log("Contract Address: ", defi_contract.options.address);
+
         } catch (error) {
             console.error("Error connecting to MetaMask:", error);
         }

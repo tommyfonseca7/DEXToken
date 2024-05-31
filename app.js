@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 let contract;
 let userAccount;
 
-const contractAddress = "0xD5474120a61F59FF463481eBd2Eb19E578649CeE";
+const contractAddress = "0xE09E481B49fEdce402beAcd33C5EB03bE2a25e51";
 const contractABI = defi_abi;
 
 window.connectWallet = async function () {
@@ -74,11 +74,23 @@ window.sellDex = async function () {
 
 window.fetchBalance = async function () {
   try {
-    // Call the balanceOf function on the existing contract instance
+    if (!contract || !userAccount) {
+      throw new Error("Contract or user account not initialized.");
+    }
+
+    console.log("Fetching balance for account:", userAccount);
+
+    // Fetch the DEX token balance
     const userBalance = await contract.methods.balanceOf(userAccount).call();
-    document.getElementById("balance").innerText = userBalance;
+    console.log("User balance in Wei:", userBalance);
+    const balanceInEth = web3.utils.fromWei(userBalance, "ether");
+    console.log("User balance in DEX tokens:", balanceInEth);
+    document.getElementById("balance").innerText = `Balance: ${balanceInEth} DEX`;
   } catch (error) {
     console.error("Error fetching balance", error);
+    if (error.message.includes("Returned values aren't valid")) {
+      console.error("Possible causes: incorrect ABI, wrong contract address, or a non-synced node.");
+    }
     document.getElementById("balance").innerText = "Error fetching balance";
   }
 };

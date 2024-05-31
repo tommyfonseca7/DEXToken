@@ -5,11 +5,11 @@ const web3 = new Web3(window.ethereum);
 // const web3 = new Web3(new Web3.providers.HttpProvider('http://127.0.0.1:8545'));
 
 // Parte relacionada ao contrato inteligente DecentralizedFinance
-const defi_contractAddress = "0xf8e81D47203A594245E36C48e151709F0C19fBe8";
+const defi_contractAddress = "0xE3Ca443c9fd7AF40A2B5a95d43207E763e56005F";
 const defi_contract = new web3.eth.Contract(defi_abi, defi_contractAddress);
 
 // Parte relacionada ao contrato inteligente SimpleNFT
-const nft_contractAddress = "0xD7ACd2a9FD159E69Bb102A1ca21C9a3e3A5F771B";
+const nft_contractAddress = "0xd7Ca4e99F7C171B9ea2De80d3363c47009afaC5F";
 const nft_contract = new web3.eth.Contract(nft_abi, nft_contractAddress);
 
 async function connectMetaMask() {
@@ -20,8 +20,8 @@ async function connectMetaMask() {
       });
       console.log("Connected account:", accounts[0]);
 
-      checkConnection();
-      checkGetDexSwapRate();
+      // checkConnection();
+      // checkGetDexSwapRate();
     } catch (error) {
       console.error("Error connecting to MetaMask:", error);
     }
