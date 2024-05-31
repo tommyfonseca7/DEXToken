@@ -82,11 +82,32 @@ async function checkGetDexSwapRate() {
   }
 }
 
+// async function setRateEthToDex(newRate) {
+//   const accounts = await web3.eth.getAccounts();
+//   await defi_contract.methods
+//     .setDexSwapRate(newRate)
+//     .send({ from: accounts[0] });
+// }
+
 async function setRateEthToDex(newRate) {
-  const accounts = await web3.eth.getAccounts();
-  await defi_contract.methods
-    .setDexSwapRate(newRate)
-    .send({ from: accounts[0] });
+  try {
+    if (!defi_contract) {
+      throw new Error("Contract is not initialized.");
+    }
+
+    const accounts = await web3.eth.getAccounts();
+    if (!accounts || accounts.length === 0) {
+      throw new Error("No accounts found. Make sure MetaMask is connected.");
+    }
+
+    await defi_contract.methods
+      .setDexSwapRate(newRate)
+      .send({ from: accounts[0] });
+      
+    console.log(`Dex Swap Rate set to: ${newRate}`);
+  } catch (error) {
+    console.error("Error setting Dex Swap Rate:", error);
+  }
 }
 
 async function listenToLoanCreation() {
