@@ -120,13 +120,6 @@ async function checkLoanStatus(loanId) {
     console.error("Error checking loan status:", error);
   }
 }
-// async function getDex() {
-//   const accounts = await web3.eth.getAccounts();
-//   const dexBalance = await defi_contract.methods
-//     .getDexBalance()
-//     .call({ from: accounts[0] });
-//   console.log("DEX Balance:", dexBalance);
-// }
 
 async function buyDex() {
   try {
@@ -148,11 +141,9 @@ async function buyDex() {
     } catch (error) {
       console.error("Error buying DEX", error);
     }
-
   } catch (error) {
     console.error("Error buying DEX tokens:", error);
   }
-
 }
 
 async function getDex() {
@@ -163,10 +154,84 @@ async function getDex() {
   console.log("DEX Balance:", dexBalance);
 }
 
-async function sellDex(dexAmount) {
-  const accounts = await web3.eth.getAccounts();
-  await defi_contract.methods.sellDex(dexAmount).send({ from: accounts[0] });
+// async function sellDex() {
+//   try {
+//     const ethAmount = prompt("Enter the amount of DEX tokens to sell:");
+//     if (!ethAmount || isNaN(ethAmount) || ethAmount <= 0) {
+//       throw new Error("Invalid DEX amount");
+//     }
+
+//     const accounts = await web3.eth.getAccounts();
+//     const ethAmountInWei = web3.utils.toWei(ethAmount, "ether");
+    
+//     try {
+
+//       await defi_contract.methods.sellDex(ethAmount).send({ from: accounts[0], value: ethAmountInWei, })
+//       alert("DEX purchased successfully");
+//       fetchBalance(); // Refresh balance after buying DEX
+//     } catch (error) {
+//       console.error("Error buying DEX", error);
+//     }
+//   } catch (error) {
+//     console.error("Error buying DEX tokens:", error);
+//   }
+// }
+
+
+
+// async function sellDex() {
+//   try {
+//     const ethAmount = prompt("Enter the amount of DEX tokens to sell:");
+//     if (!ethAmount || isNaN(ethAmount) || ethAmount <= 0) {
+//       throw new Error("Invalid DEX amount");
+//     }
+
+//     const accounts = await web3.eth.getAccounts();
+//     const ethAmountInWei = web3.utils.toWei(ethAmount, "ether");
+    
+//     try {
+
+//       await defi_contract.methods.sellDex(ethAmount).send({ from: accounts[0], value: ethAmountInWei, })
+//       alert("DEX selled successfully");
+//     } catch (error) {
+//       console.error("Error buying DEX", error);
+//     }
+//   } catch (error) {
+//     console.error("Error buying DEX tokens:", error);
+//   }
+// }
+
+
+
+async function sellDex() {
+  try {
+    const ethAmount = prompt("Enter the amount of ETH you want to sell:");
+    if (!ethAmount || isNaN(ethAmount) || ethAmount <= 0) {
+      throw new Error("Invalid ETH amount");
+    }
+
+    const ethAmountInWei = web3.utils.toWei(ethAmount, "ether");
+    
+    // Retrieve the current swap rate from the contract
+    const swapRate = await defi_contract.methods.getDexSwapRate().call();
+    console.log(`Retrieved Swap Rate: ${swapRate}`);
+
+    // Calculate the required DEX amount based on the swap rate
+    const dexAmount = new web3.utils.BN(ethAmountInWei).div(new web3.utils.BN(swapRate));
+    const dexAmountInWei = dexAmount.toString();
+
+    const accounts = await web3.eth.getAccounts();
+    
+    // Send the DEX tokens to the contract to receive ETH
+    await defi_contract.methods.sellDex(dexAmountInWei).send({ from: accounts[0] });
+    alert("DEX sold successfully");
+    // fetchBalance(); // Refresh balance after selling DEX
+  } catch (error) {
+    console.error("Error selling DEX tokens:", error);
+  }
 }
+
+
 
 async function loan(dexAmount, deadline) {
   const accounts = await web3.eth.getAccounts();
