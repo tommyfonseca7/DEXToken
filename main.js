@@ -198,13 +198,28 @@ async function returnLoan(loanId, ethAmount) {
     .send({ from: accounts[0] });
 }
 
+// async function getEthTotalBalance() {
+//   const accounts = await web3.eth.getAccounts();
+//   const balance = await defi_contract.methods
+//     .getBalance()
+//     .call({ from: accounts[0] });
+//   console.log("Total ETH Balance:", balance);
+// }
+
+
 async function getEthTotalBalance() {
-  const accounts = await web3.eth.getAccounts();
-  const balance = await defi_contract.methods
-    .getBalance()
-    .call({ from: accounts[0] });
-  console.log("Total ETH Balance:", balance);
+  try {
+    if (!defi_contract || !userAccount) {
+      throw new Error("Contract or user account not initialized.");
+    }
+
+    const balance = await defi_contract.methods.getBalance().call({ from: userAccount });
+    console.log("Total ETH Balance:", balance);
+  } catch (error) {
+    console.error("Error getting total ETH balance:", error);
+  }
 }
+
 
 async function getRateEthToDex() {
   const rate = await defi_contract.methods.dexSwapRate().call();
