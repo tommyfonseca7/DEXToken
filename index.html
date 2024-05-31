@@ -1,30 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Decentralized Finance</title>
+    <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
+    <link rel="stylesheet" href="./static/style/style.css" />
+  </head>
+  <body>
+    <div id="top-bar" style="display: none">
+      <div id="title">
+        Decentralized Finance Application - DEX Token, Loans, and NFTs
+      </div>
+      <div id="wallet-info">
+        <img
+          src="./static/images/wallet.svg"
+          alt="Wallet Icon"
+          id="wallet-icon"
+          class="white-icon"
+        />
+        <div id="wallet-details">
+          <p>Wallet connected: <span id="wallet-address"></span></p>
+          <p id="wallet-balance">
+            DEX Balance: <span id="wallet-balance-value"></span>
+          </p>
+        </div>
+      </div>
+    </div>
 
-<head>
-  <meta charset="UTF-8" />
-  <title>Decentralized Finance</title>
-  <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
-</head>
+    <div class="container" id="container">
+      <h1>Connect to your MetaMask account to proceed:</h1>
+      <img
+        src="./static/images/MetaMask_Fox.svg"
+        alt="MetaMask Fox"
+        height="200px"
+      />
+      <button id="connect-button">Connect</button>
+    </div>
 
-<body>
-  <button onclick="connectMetaMask()">Connect MetaMask</button>         
-  <div id="loan-list">
-      <!-- Loans will be displayed here -->
-  </div>
-  <button onclick="buyDex()">Buy DEX</button>
-  <button onclick="sellDex()">Sell DEX</button>
-  <button onclick="loan()">Loan</button>
-  <button onclick="returnLoan()">Return Loan</button>
-  <button onclick="getDex()">Get DEX Balance</button>
-  <button onclick="getEthTotalBalance()">Get Total ETH Balance</button>
-  <button onclick="setRateEthToDex(prompt('Enter new rate:'))">Set Rate ETH to DEX</button>
-  <button onclick="getRateEthToDex()">Get Rate ETH to DEX</button>
-  <button onclick="makeLoanRequestByNft()">Make Loan Request by NFT</button>
-  <button onclick="cancelLoanRequestByNft()">Cancel Loan Request by NFT</button>
-  <button onclick="loanByNft()">Loan by NFT</button>
-  <button onclick="checkLoan()">Check Loan</button>
-  <button onclick="listenToLoanCreation()">Listen to Loan Creation</button>
-  <script src="main.js" type="module"></script>
-</body>
+    <div id="loan-list" style="display: none"></div>
+
+    <!-- Add a new section for the buttons -->
+    <div id="button-section">
+      <h2>Actions</h2>
+      <button id="buy-dex-button" onclick="buyDex()">Buy DEX</button>
+      <button id="sell-dex-button" onclick="sellDex()">Sell DEX</button>
+      <button id="loan-button" onclick="loan()">Loan</button>
+      <button id="return-loan-button" onclick="returnLoan()">
+        Return Loan
+      </button>
+      <button id="get-dex-button" onclick="getDex()">Get DEX Balance</button>
+      <button id="get-eth-total-balance-button" onclick="getEthTotalBalance()">
+        Get Total ETH Balance
+      </button>
+      <button
+        id="set-rate-eth-to-dex-button"
+        onclick="setRateEthToDex(prompt('Enter new rate:'))"
+      >
+        Set Rate ETH to DEX
+      </button>
+      <button id="get-rate-eth-to-dex-button" onclick="getRateEthToDex()">
+        Get Rate ETH to DEX
+      </button>
+      <button
+        id="make-loan-request-by-nft-button"
+        onclick="makeLoanRequestByNft()"
+      >
+        Make Loan Request by NFT
+      </button>
+      <button
+        id="cancel-loan-request-by-nft-button"
+        onclick="cancelLoanRequestByNft()"
+      >
+        Cancel Loan Request by NFT
+      </button>
+      <button id="loan-by-nft-button" onclick="loanByNft()">Loan by NFT</button>
+      <button id="check-loan-button" onclick="checkLoan()">Check Loan</button>
+      <button
+        id="listen-to-loan-creation-button"
+        onclick="listenToLoanCreation()"
+      >
+        Listen to Loan Creation
+      </button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+
+    <script type="module" src="./static/scripts/main.js"></script>
+  </body>
 </html>
