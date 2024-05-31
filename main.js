@@ -1,41 +1,68 @@
 import { defi_abi } from "./abi_decentralized_finance.js";
 import { nft_abi } from "./abi_nft.js";
 
-const web3 = new Web3(window.ethereum);
-// const web3 = new Web3(new Web3.providers.HttpProvider('http://127.0.0.1:8545'));
+document.addEventListener("DOMContentLoaded", async () => {
+  if (typeof window.ethereum !== "undefined") {
+    // Initialize web3 instance
+    window.web3 = new Web3(window.ethereum);
+    console.log("Web3 initialized");
+  } else {
+    alert("Please install MetaMask!");
+  }
+});
 
-// Parte relacionada ao contrato inteligente DecentralizedFinance
-const defi_contractAddress = "0xE3Ca443c9fd7AF40A2B5a95d43207E763e56005F";
-const defi_contract = new web3.eth.Contract(defi_abi, defi_contractAddress);
+let defi_contract;
+let nft_contract;
+let userAccount;
 
-// Parte relacionada ao contrato inteligente SimpleNFT
+const defi_contractAddress = "0xE09E481B49fEdce402beAcd33C5EB03bE2a25e51";
+const defi_contractABI = defi_abi;
+
 const nft_contractAddress = "0xd7Ca4e99F7C171B9ea2De80d3363c47009afaC5F";
-const nft_contract = new web3.eth.Contract(nft_abi, nft_contractAddress);
+const nft_contractABI = nft_abi;
 
-async function connectMetaMask() {
+window.connectMetaMask = async function () {
   if (window.ethereum) {
     try {
       const accounts = await window.ethereum.request({
         method: "eth_requestAccounts",
       });
-      console.log("Connected account:", accounts[0]);
-
-      // checkConnection();
-      // checkGetDexSwapRate();
+      userAccount = accounts[0];
+      // Initialize contract instances
+      defi_contract = new web3.eth.Contract(defi_contractABI, defi_contractAddress);
+      nft_contract = new web3.eth.Contract(nft_contractABI, nft_contractAddress);
+      console.log("Wallet connected:", userAccount);
+      fetchBalance(); // Fetch balance after connecting the wallet
     } catch (error) {
       console.error("Error connecting to MetaMask:", error);
     }
   } else {
     console.error("MetaMask not found. Please install the MetaMask extension.");
   }
-}
+};
 
-/*****************
- *
- * DEBUG
- *
- *
- */
+async function fetchBalance() {
+  try {
+    if (!defi_contract || !userAccount) {
+      throw new Error("Contract or user account not initialized.");
+    }
+
+    console.log("Fetching balance for account:", userAccount);
+
+    // Fetch the DEX token balance
+    const userBalance = await defi_contract.methods.balanceOf(userAccount).call();
+    console.log("User balance in Wei:", userBalance);
+    const balanceInEth = web3.utils.fromWei(userBalance, "ether");
+    console.log("User balance in DEX tokens:", balanceInEth);
+    document.getElementById("balance").innerText = `Balance: ${balanceInEth} DEX`;
+  } catch (error) {
+    console.error("Error fetching balance", error);
+    if (error.message.includes("Returned values aren't valid")) {
+      console.error("Possible causes: incorrect ABI, wrong contract address, or a non-synced node.");
+    }
+    document.getElementById("balance").innerText = "Error fetching balance";
+  }
+}
 
 async function checkConnection() {
   try {
@@ -45,6 +72,7 @@ async function checkConnection() {
     console.error("Error checking network:", error);
   }
 }
+
 async function checkGetDexSwapRate() {
   try {
     const swapRate = await defi_contract.methods.getDexSwapRate().call();
@@ -53,10 +81,6 @@ async function checkGetDexSwapRate() {
     console.error("Error getting DEX Swap Rate:", error);
   }
 }
-
-/*************
- * END
- */
 
 async function setRateEthToDex(newRate) {
   const accounts = await web3.eth.getAccounts();
@@ -67,7 +91,7 @@ async function setRateEthToDex(newRate) {
 
 async function listenToLoanCreation() {
   defi_contract.events
-    .loanCreated({})
+    .LoanCreated({})
     .on("data", async function (event) {
       console.log("New loan created:", event.returnValues);
 
@@ -96,27 +120,39 @@ async function checkLoanStatus(loanId) {
     console.error("Error checking loan status:", error);
   }
 }
+// async function getDex() {
+//   const accounts = await web3.eth.getAccounts();
+//   const dexBalance = await defi_contract.methods
+//     .getDexBalance()
+//     .call({ from: accounts[0] });
+//   console.log("DEX Balance:", dexBalance);
+// }
 
 async function buyDex() {
   try {
-    const dexAmount = prompt("Enter the amount of DEX tokens to purchase:");
-    if (!dexAmount || isNaN(dexAmount) || dexAmount <= 0) {
+    const ethAmount = prompt("Enter the amount of DEX tokens to purchase:");
+    if (!ethAmount || isNaN(ethAmount) || ethAmount <= 0) {
       throw new Error("Invalid DEX amount");
     }
 
-    const swapRate = await defi_contract.methods.getDexSwapRate().call();
-    console.log(`Retrieved Swap Rate: ${swapRate}`); // Log para verificação
-    const ethAmount = dexAmount * swapRate;
-
     const accounts = await web3.eth.getAccounts();
-    await defi_contract.methods
-      .buyDex()
-      .send({ from: accounts[0], value: ethAmount });
+    const ethAmountInWei = web3.utils.toWei(ethAmount, "ether");
+    
+    try {
+      await defi_contract.methods.buyDex().send({
+        from: accounts[0],
+        value: ethAmountInWei,
+      });
+      alert("DEX purchased successfully");
+      fetchBalance(); // Refresh balance after buying DEX
+    } catch (error) {
+      console.error("Error buying DEX", error);
+    }
 
-    console.log(`${dexAmount} DEX tokens purchased for ${ethAmount} ETH.`);
   } catch (error) {
     console.error("Error buying DEX tokens:", error);
   }
+
 }
 
 async function getDex() {
