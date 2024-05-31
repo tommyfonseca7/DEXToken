@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 let balanceInEthACC;
+let ethTotalBalance;
 let defi_contract;
 let nft_contract;
 let userAccount;
@@ -63,7 +64,9 @@ window.connectMetaMask = async function () {
 setInterval(() => {
   if (opt) {
     getDex();
+    getEthTotalBalance();
     document.getElementById("wallet-balance-value").innerText = balanceInEthACC;
+    document.getElementById("wei-balance-value").innerText = balanceInEthACC;
   }
 }, 2500);
 
@@ -281,7 +284,7 @@ async function getEthTotalBalance() {
     const balance = await defi_contract.methods
       .getBalance()
       .call({ from: userAccount });
-    console.log("Total ETH Balance:", balance);
+    ethTotalBalance = balance;
   } catch (error) {
     console.error("Error getting total ETH balance:", error);
   }
@@ -380,6 +383,30 @@ async function displayLoansWithStatusButtons() {
     console.error("Error displaying loans:", error);
   }
 }
+
+document.addEventListener("DOMContentLoaded", function () {
+  var popup = document.getElementById("popup");
+  var openPopupBtn = document.getElementById("get-eth-total-balance-button");
+  var closeBtn = document.querySelector(".close-btn");
+
+  // Open the popup
+  openPopupBtn.onclick = function () {
+    popup.style.display = "block";
+    document.getElementById("eth-total-balance").innerText = ethTotalBalance;
+  };
+
+  // Close the popup
+  closeBtn.onclick = function () {
+    popup.style.display = "none";
+  };
+
+  // Close the popup when clicking outside of the popup content
+  window.onclick = function (event) {
+    if (event.target == popup) {
+      popup.style.display = "none";
+    }
+  };
+});
 
 window.connectMetaMask = connectMetaMask;
 window.buyDex = buyDex;

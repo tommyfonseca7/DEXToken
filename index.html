@@ -43,46 +43,72 @@
 
     <!-- Add a new section for the buttons -->
     <div id="button-section">
-      <h2>Actions</h2>
-      <button id="buy-dex-button" onclick="buyDex()">Buy DEX</button>
-      <button id="sell-dex-button" onclick="sellDex()">Sell DEX</button>
-      <button id="loan-button" onclick="loan()">Loan</button>
-      <button id="return-loan-button" onclick="returnLoan()">
-        Return Loan
-      </button>
-      <button id="get-dex-button" onclick="getDex()">Get DEX Balance</button>
-      <button id="get-eth-total-balance-button" onclick="getEthTotalBalance()">
-        Get Total ETH Balance
-      </button>
-      <button
-        id="set-rate-eth-to-dex-button"
-        onclick="setRateEthToDex(prompt('Enter new rate:'))"
-      >
-        Set Rate ETH to DEX
-      </button>
-      <button id="get-rate-eth-to-dex-button" onclick="getRateEthToDex()">
-        Get Rate ETH to DEX
-      </button>
-      <button
-        id="make-loan-request-by-nft-button"
-        onclick="makeLoanRequestByNft()"
-      >
-        Make Loan Request by NFT
-      </button>
-      <button
-        id="cancel-loan-request-by-nft-button"
-        onclick="cancelLoanRequestByNft()"
-      >
-        Cancel Loan Request by NFT
-      </button>
-      <button id="loan-by-nft-button" onclick="loanByNft()">Loan by NFT</button>
-      <button id="check-loan-button" onclick="checkLoan()">Check Loan</button>
+      <br /><br />
+      <div class="dex-container">
+        <h2>Buy and Sell DEX Tokens:</h2>
+        <h3>Current balance(Wein): <span id="wei-balance-value"></span> WEI</h3>
+
+        <button id="buy-dex-button" onclick="buyDex()">Buy DEX</button>
+        <button id="sell-dex-button" onclick="sellDex()">Sell DEX</button>
+        <button
+          id="get-eth-total-balance-button"
+          onclick="getEthTotalBalance()"
+        >
+          Get Total ETH Balance
+        </button>
+        <button
+          id="set-rate-eth-to-dex-button"
+          onclick="setRateEthToDex(prompt('Enter new rate:'))"
+        >
+          Set Rate ETH to DEX
+        </button>
+        <button id="get-rate-eth-to-dex-button" onclick="getRateEthToDex()">
+          Get Rate ETH to DEX
+        </button>
+      </div>
+
+      <div class="loan-container">
+        <h2>Loans:</h2>
+        <button id="loan-button" onclick="loan()">Loan</button>
+        <button id="return-loan-button" onclick="returnLoan()">
+          Return Loan
+        </button>
+        <button
+          id="make-loan-request-by-nft-button"
+          onclick="makeLoanRequestByNft()"
+        >
+          Make Loan Request by NFT
+        </button>
+        <button
+          id="cancel-loan-request-by-nft-button"
+          onclick="cancelLoanRequestByNft()"
+        >
+          Cancel Loan Request by NFT
+        </button>
+        <button id="loan-by-nft-button" onclick="loanByNft()">
+          Loan by NFT
+        </button>
+        <button id="check-loan-button" onclick="checkLoan()">Check Loan</button>
+      </div>
+
+      <div class="nft-container">
+        <h2>/TODO NFT PART - need to mint</h2>
+      </div>
+
       <button
         id="listen-to-loan-creation-button"
         onclick="listenToLoanCreation()"
       >
         Listen to Loan Creation
       </button>
+    </div>
+
+    <div id="popup" class="popup">
+      <div class="popup-content">
+        <span class="close-btn">&times;</span>
+        <h2 id>ETH Total Balance</h2>
+        <p id="eth-total-balance"></p>
+      </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
