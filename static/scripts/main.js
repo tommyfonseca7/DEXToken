@@ -65,8 +65,8 @@ setInterval(() => {
   if (opt) {
     getDex();
     getEthTotalBalance();
-    document.getElementById("wallet-balance-value").innerText = balanceInEthACC;
-    document.getElementById("wei-balance-value").innerText = balanceInEthACC;
+    document.getElementById("wallet-balance-value").innerText = convertWEItoDEX(balanceInEthACC);
+    document.getElementById("wei-balance-value").innerText = convertWEItoETH(balanceInEthACC);
   }
 }, 2500);
 
@@ -107,15 +107,6 @@ async function fetchBalance() {
       );
     }
     document.getElementById("balance").innerText = "Error fetching balance";
-  }
-}
-
-async function checkConnection() {
-  try {
-    const network = await web3.eth.net.getNetworkType();
-    console.log(`Connected to network: ${network}`);
-  } catch (error) {
-    console.error("Error checking network:", error);
   }
 }
 
@@ -235,9 +226,11 @@ async function sellDex() {
     console.log(`Retrieved Swap Rate: ${swapRate}`);
 
     // Calculate the required DEX amount based on the swap rate
-    const dexAmount = new web3.utils.BN(ethAmountInWei).div(
-      new web3.utils.BN(swapRate)
-    );
+    // const dexAmount = new web3.utils.BN(ethAmountInWei).div(
+    //   new web3.utils.BN(swapRate)
+    // );
+
+    const dexAmount = convertETHtoDEX(ammount, swaprate)
     const dexAmountInWei = dexAmount.toString();
 
     const accounts = await web3.eth.getAccounts();
@@ -277,13 +270,17 @@ async function returnLoan(loanId, ethAmount) {
 
 async function getEthTotalBalance() {
   try {
+
+    
+   
     if (!defi_contract || !userAccount) {
       throw new Error("Contract or user account not initialized.");
     }
 
+    const accounts = await web3.eth.getAccounts();
     const balance = await defi_contract.methods
       .getBalance()
-      .call({ from: userAccount });
+      .call({ from: userAccount[accounts] });
     ethTotalBalance = balance;
   } catch (error) {
     console.error("Error getting total ETH balance:", error);
@@ -407,6 +404,17 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   };
 });
+
+
+function convertWEItoDEX(wei) {
+  let dexValue = Number(wei) / 1000;
+  return dexValue;
+}
+
+function convertWEItoETH(wei) {
+  let dexValue = Number(wei) / 1000000000000000000;
+  return dexValue;
+}
 
 window.connectMetaMask = connectMetaMask;
 window.buyDex = buyDex;
