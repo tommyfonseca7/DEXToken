@@ -402,10 +402,10 @@ document.addEventListener("DOMContentLoaded", function () {
   // Open the popup
   openPopupBtn.onclick = function () {
     popup.style.display = "block";
-    if (ethTotalBalance == null) {
-      ethTotalBalance =
-        "You are not the owner. Only owner can see the ETH contract balance";
-    }
+    // if (ethTotalBalance == undefined) {
+    //   ethTotalBalance =
+    //     "You are not the owner. Only owner can see the ETH contract balance";
+    // }
     document.getElementById("eth-total-balance").innerText = ethTotalBalance;
   };
 
