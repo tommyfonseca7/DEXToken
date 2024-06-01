@@ -18,6 +18,7 @@ let defi_contract;
 let nft_contract;
 let userAccount;
 let opt = false;
+let swapRate;
 
 const defi_contractAddress = "0xE09E481B49fEdce402beAcd33C5EB03bE2a25e51";
 const defi_contractABI = defi_abi;
@@ -61,28 +62,24 @@ window.connectMetaMask = async function () {
   }
 };
 
-<<<<<<< HEAD
 setInterval(async () => {
-=======
-setInterval(() => {
->>>>>>> parent of 42f52bb (fix sell and swap rate)
   if (opt) {
+    let swapRateTest;
+
+    try {
+      swapRateTest = await getDexSwapRate();
+    } catch (error) {
+      console.error("Error getting DEX Swap Rate:", error);
+      return; // Exit the function if there's an error
+    }
+
     getDex();
-<<<<<<< HEAD
     getEthTotalBalance;
     document.getElementById("wallet-balance-value").innerText =
       await convertWEItoDEX(
         balanceInEthACC.toString().slice(0, -1),
         swapRateTest
       );
-=======
-    getEthTotalBalance();
-    let swaprate = getDexSwapRate();
-    document.getElementById("wallet-balance-value").innerText = convertWEItoDEX(
-      balanceInEthACC,
-      swaprate
-    );
->>>>>>> parent of 42f52bb (fix sell and swap rate)
     document.getElementById("wei-balance-value").innerText =
       convertWEItoETH(balanceInEthACC);
   }
@@ -128,17 +125,14 @@ async function fetchBalance() {
   }
 }
 
-<<<<<<< HEAD
 async function getDexSwapRate() {
-=======
-async function checkGetDexSwapRate() {
->>>>>>> parent of 42f52bb (fix sell and swap rate)
   try {
-    const swapRate = await defi_contract.methods.getDexSwapRate().call();
-    console.log(`DEX Swap Rate: ${swapRate}`);
+    swapRate = await defi_contract.methods.getDexSwapRate().call();
+    // console.log(`DEX Swap Rate: ${swapRate}`);
   } catch (error) {
     console.error("Error getting DEX Swap Rate:", error);
   }
+  return swapRate;
 }
 
 // async function setRateEthToDex(newRate) {
@@ -241,11 +235,7 @@ async function sellDex() {
       throw new Error("Invalid ETH amount");
     }
 
-<<<<<<< HEAD
     // const ethAmountInWei = web3.utils.toWei(ethAmount, "ether");
-=======
-    const ethAmountInWei = web3.utils.toWei(ethAmount, "ether");
->>>>>>> parent of 42f52bb (fix sell and swap rate)
 
     // Retrieve the current swap rate from the contract
     const swapRate = await defi_contract.methods.getDexSwapRate().call();
@@ -256,7 +246,7 @@ async function sellDex() {
     //   new web3.utils.BN(swapRate)
     // );
 
-    const dexAmount = convertETHtoDEX(ammount, swaprate);
+    const dexAmount = convertEthtoWEI(ethAmount);
     const dexAmountInWei = dexAmount.toString();
 
     const accounts = await web3.eth.getAccounts();
@@ -412,10 +402,10 @@ document.addEventListener("DOMContentLoaded", function () {
   // Open the popup
   openPopupBtn.onclick = function () {
     popup.style.display = "block";
-    // if (ethTotalBalance == undefined) {
-    //   ethTotalBalance =
-    //     "You are not the owner. Only owner can see the ETH contract balance";
-    // }
+    if (ethTotalBalance == null) {
+      ethTotalBalance =
+        "You are not the owner. Only owner can see the ETH contract balance";
+    }
     document.getElementById("eth-total-balance").innerText = ethTotalBalance;
   };
 
@@ -433,11 +423,13 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function convertWEItoDEX(wei, swapRate) {
-  let dexValue = Number(wei) / swapRate;
+  // Ensure wei is a BigInt and swapRate is a Number
+  let dexValue = Number(wei) / Number(swapRate);
   return dexValue;
 }
 
 function convertWEItoETH(wei) {
+  // Ensure wei is a BigInt
   let dexValue = Number(wei) / 1000000000000000000;
   return dexValue;
 }
