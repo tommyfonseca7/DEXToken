@@ -20,7 +20,7 @@ let userAccount;
 let opt = false;
 let swapRate;
 
-const defi_contractAddress = "0xE09E481B49fEdce402beAcd33C5EB03bE2a25e51";
+const defi_contractAddress = "0x8bE8707d47fDF0b155C531E2a89c07116e7861Dd";
 const defi_contractABI = defi_abi;
 
 const nft_contractAddress = "0xd7Ca4e99F7C171B9ea2De80d3363c47009afaC5F";
@@ -302,13 +302,16 @@ async function getEthTotalBalance() {
     const accounts = await web3.eth.getAccounts();
 
     if (accounts[0] != "0x604eCa2840a80CA0442193422cd4d760b96FBaAD") {
-      ethTotalBalance = "You are not the owner. Only the owner can see the ETH contract balance.";
+      ethTotalBalance =
+        "You are not the owner. Only the owner can see the ETH contract balance.";
       return;
     }
 
     // Se o usuário for o proprietário, buscar o saldo
-    const balance = await defi_contract.methods.getBalance().call({ from: accounts[0] });
-    ethTotalBalance = web3.utils.fromWei(balance, 'ether'); // Converte Wei para Ether para exibição
+    const balance = await defi_contract.methods
+      .getBalance()
+      .call({ from: accounts[0] });
+    ethTotalBalance = web3.utils.fromWei(balance, "ether"); // Converte Wei para Ether para exibição
   } catch (error) {
     console.error("Error getting total ETH balance:", error);
     ethTotalBalance = "Error getting balance. Please try again.";
