@@ -297,16 +297,24 @@ async function getEthTotalBalance() {
     if (!defi_contract || !userAccount) {
       throw new Error("Contract or user account not initialized.");
     }
-    const accounts = await web3.eth.getAccounts();
-    const balance = await defi_contract.methods.getBalance().call();
 
-    console.log(balance);
-    ethTotalBalance = balance; // Convert Wei to Ether for display
+    // Verifica se o usuário é o proprietário
+    const accounts = await web3.eth.getAccounts();
+
+    if (accounts[0] != "0x604eCa2840a80CA0442193422cd4d760b96FBaAD") {
+      ethTotalBalance = "You are not the owner. Only the owner can see the ETH contract balance.";
+      return;
+    }
+
+    // Se o usuário for o proprietário, buscar o saldo
+    const balance = await defi_contract.methods.getBalance().call({ from: accounts[0] });
+    ethTotalBalance = web3.utils.fromWei(balance, 'ether'); // Converte Wei para Ether para exibição
   } catch (error) {
     console.error("Error getting total ETH balance:", error);
     ethTotalBalance = "Error getting balance. Please try again.";
   }
 }
+
 
 
 
@@ -410,16 +418,13 @@ document.addEventListener("DOMContentLoaded", function () {
   var closeBtn = document.querySelector(".close-btn");
 
   // Open the popup
-  openPopupBtn.onclick = function () {
+  openPopupBtn.onclick = async function () {
     popup.style.display = "block";
-    
-    getEthTotalBalance();
 
-    if (ethTotalBalance == null) {
-      ethTotalBalance =
-        "You are not the owner. Only owner can see the ETH contract balance";
+    if (opt) {
+      await getEthTotalBalance(); // Busca o saldo antes de exibir
     }
-    
+
     document.getElementById("eth-total-balance").innerText = ethTotalBalance;
   };
 
