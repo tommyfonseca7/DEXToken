@@ -62,7 +62,6 @@ window.connectMetaMask = async function () {
   }
 };
 
-
 setInterval(async () => {
   if (opt) {
     let swapRateTest;
@@ -75,17 +74,16 @@ setInterval(async () => {
     }
 
     getDex();
-    getEthTotalBalance();
-    document.getElementById("wallet-balance-value").innerText = await convertWEItoDEX(
-      balanceInEthACC.toString().slice(0, -1),
-      swapRateTest
-    );
+    getEthTotalBalance;
+    document.getElementById("wallet-balance-value").innerText =
+      await convertWEItoDEX(
+        balanceInEthACC.toString().slice(0, -1),
+        swapRateTest
+      );
     document.getElementById("wei-balance-value").innerText =
       convertWEItoETH(balanceInEthACC);
   }
 }, 2500);
-
-
 
 // Add event listener to the connect button
 document
@@ -126,7 +124,6 @@ async function fetchBalance() {
     document.getElementById("balance").innerText = "Error fetching balance";
   }
 }
-
 
 async function getDexSwapRate() {
   try {
@@ -239,7 +236,6 @@ async function sellDex() {
     }
 
     // const ethAmountInWei = web3.utils.toWei(ethAmount, "ether");
-
 
     // Retrieve the current swap rate from the contract
     const swapRate = await defi_contract.methods.getDexSwapRate().call();
@@ -406,6 +402,10 @@ document.addEventListener("DOMContentLoaded", function () {
   // Open the popup
   openPopupBtn.onclick = function () {
     popup.style.display = "block";
+    if (ethTotalBalance == null) {
+      ethTotalBalance =
+        "You are not the owner. Only owner can see the ETH contract balance";
+    }
     document.getElementById("eth-total-balance").innerText = ethTotalBalance;
   };
 
@@ -422,10 +422,6 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 });
 
-
-
-
-
 function convertWEItoDEX(wei, swapRate) {
   // Ensure wei is a BigInt and swapRate is a Number
   let dexValue = Number(wei) / Number(swapRate);
@@ -439,7 +435,7 @@ function convertWEItoETH(wei) {
 }
 
 function convertEthtoWEI(eth) {
-  let weiValue = Number(eth) * (1000000000000000000);
+  let weiValue = Number(eth) * 1000000000000000000;
   return weiValue;
 }
 
