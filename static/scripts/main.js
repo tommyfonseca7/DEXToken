@@ -277,11 +277,19 @@ async function returnLoan(loanId, ethAmount) {
 }
 
 // async function getEthTotalBalance() {
-//   const accounts = await web3.eth.getAccounts();
-//   const balance = await defi_contract.methods
-//     .getBalance()
-//     .call({ from: accounts[0] });
-//   console.log("Total ETH Balance:", balance);
+//   try {
+//     if (!defi_contract || !userAccount) {
+//       throw new Error("Contract or user account not initialized.");
+//     }
+
+//     const accounts = await web3.eth.getAccounts();
+//     const balance = await defi_contract.methods
+//       .getBalance()
+//       .call({ from: userAccount[accounts] });
+//     ethTotalBalance = balance;
+//   } catch (error) {
+//     console.error("Error getting total ETH balance:", error);
+//   }
 // }
 
 async function getEthTotalBalance() {
@@ -289,16 +297,18 @@ async function getEthTotalBalance() {
     if (!defi_contract || !userAccount) {
       throw new Error("Contract or user account not initialized.");
     }
-
     const accounts = await web3.eth.getAccounts();
-    const balance = await defi_contract.methods
-      .getBalance()
-      .call({ from: userAccount[accounts] });
-    ethTotalBalance = balance;
+    const balance = await defi_contract.methods.getBalance().call();
+
+    console.log(balance);
+    ethTotalBalance = balance; // Convert Wei to Ether for display
   } catch (error) {
     console.error("Error getting total ETH balance:", error);
+    ethTotalBalance = "Error getting balance. Please try again.";
   }
 }
+
+
 
 async function getRateEthToDex() {
   const rate = await defi_contract.methods.dexSwapRate().call();
@@ -402,10 +412,14 @@ document.addEventListener("DOMContentLoaded", function () {
   // Open the popup
   openPopupBtn.onclick = function () {
     popup.style.display = "block";
+    
+    getEthTotalBalance();
+
     if (ethTotalBalance == null) {
       ethTotalBalance =
         "You are not the owner. Only owner can see the ETH contract balance";
     }
+    
     document.getElementById("eth-total-balance").innerText = ethTotalBalance;
   };
 
