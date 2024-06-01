@@ -301,10 +301,10 @@ async function getEthTotalBalance() {
     // Verifica se o usuário é o proprietário
     const accounts = await web3.eth.getAccounts();
 
-    if (accounts[0] != "0x604eCa2840a80CA0442193422cd4d760b96FBaAD") {
-      ethTotalBalance = "You are not the owner. Only the owner can see the ETH contract balance.";
-      return;
-    }
+    // if (accounts[0] != "0x604eCa2840a80CA0442193422cd4d760b96FBaAD") {
+    //   ethTotalBalance = "You are not the owner. Only the owner can see the ETH contract balance.";
+    //   return;
+    // }
 
     // Se o usuário for o proprietário, buscar o saldo
     const balance = await defi_contract.methods.getBalance().call({ from: accounts[0] });
