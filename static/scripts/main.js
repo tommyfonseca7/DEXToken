@@ -65,8 +65,13 @@ setInterval(() => {
   if (opt) {
     getDex();
     getEthTotalBalance();
-    document.getElementById("wallet-balance-value").innerText = convertWEItoDEX(balanceInEthACC);
-    document.getElementById("wei-balance-value").innerText = convertWEItoETH(balanceInEthACC);
+    let swaprate = getDexSwapRate();
+    document.getElementById("wallet-balance-value").innerText = convertWEItoDEX(
+      balanceInEthACC,
+      swaprate
+    );
+    document.getElementById("wei-balance-value").innerText =
+      convertWEItoETH(balanceInEthACC);
   }
 }, 2500);
 
@@ -230,7 +235,7 @@ async function sellDex() {
     //   new web3.utils.BN(swapRate)
     // );
 
-    const dexAmount = convertETHtoDEX(ammount, swaprate)
+    const dexAmount = convertETHtoDEX(ammount, swaprate);
     const dexAmountInWei = dexAmount.toString();
 
     const accounts = await web3.eth.getAccounts();
@@ -270,9 +275,6 @@ async function returnLoan(loanId, ethAmount) {
 
 async function getEthTotalBalance() {
   try {
-
-    
-   
     if (!defi_contract || !userAccount) {
       throw new Error("Contract or user account not initialized.");
     }
@@ -405,15 +407,19 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 });
 
-
-function convertWEItoDEX(wei) {
-  let dexValue = Number(wei) / 1000;
+function convertWEItoDEX(wei, swapRate) {
+  let dexValue = Number(wei) / swapRate;
   return dexValue;
 }
 
 function convertWEItoETH(wei) {
   let dexValue = Number(wei) / 1000000000000000000;
   return dexValue;
+}
+
+function convertEthtoWEI(eth) {
+  let weiValue = Number(eth) * 1000000000000000000;
+  return weiValue;
 }
 
 window.connectMetaMask = connectMetaMask;
