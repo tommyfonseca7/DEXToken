@@ -19,7 +19,6 @@ contract DecentralizedFinance is ERC20 {
         bool isBasedNft;
         IERC721 nftContract;
         uint256 nftId;
-        uint256 repaidAmount;
     }
 
     mapping(uint256 => Loan) public loans;
@@ -50,17 +49,14 @@ contract DecentralizedFinance is ERC20 {
         uint256 dexAmount = msg.value / dexSwapRate;
         _transfer(address(this), msg.sender, dexAmount);
         balance += msg.value;
-        adjustDexSwapRate();
     }
 
     function sellDex(uint256 dexAmount) external {
         uint256 ethAmount = dexAmount * dexSwapRate;
-
         require(address(this).balance >= ethAmount, "Not enough ETH in contract");
         _transfer(msg.sender, address(this), dexAmount);
         payable(msg.sender).transfer(ethAmount);
         balance -= ethAmount;
-        adjustDexSwapRate();
     }
 
     function getBalance() public view onlyOwner returns (uint256) {
@@ -81,10 +77,9 @@ contract DecentralizedFinance is ERC20 {
         uint256 loanValue = initialValue * (1 - ((deadline - block.timestamp) / maxLoanDuration));
         require(balance >= loanValue, "Not enough balance in contract");
         balance -= loanValue;
-        loans[loanCounter] = Loan(deadline, loanValue, address(this), msg.sender, false, IERC721(address(0)), 0, 0);
+        loans[loanCounter] = Loan(deadline, loanValue, address(this), msg.sender, false, IERC721(address(0)), 0);
         emit LoanCreated(msg.sender, loanValue, deadline);
         loanCounter++;
-        adjustDexSwapRate();
     }
 
     function returnLoan(uint256 loanId) external payable {
@@ -92,28 +87,26 @@ contract DecentralizedFinance is ERC20 {
         require(loan1.borrower == msg.sender, "Only the borrower can repay the loan");
         require(block.timestamp <= loan1.deadline, "Loan deadline has passed");
 
-        uint256 remainingAmount = loan1.amount - loan1.repaidAmount;
-        require(msg.value <= remainingAmount, "Repayment exceeds the remaining loan amount");
+        uint256 remainingAmount = loan1.amount - msg.value;
+        require(remainingAmount >= 0, "Repayment exceeds the remaining loan amount");
 
-        loan1.repaidAmount += msg.value;
         balance += msg.value;
-        
-        if (loan1.repaidAmount == loan1.amount) {
+        loan1.amount = remainingAmount;
+
+        if (loan1.amount == 0) {
             if (loan1.isBasedNft) {
                 loan1.nftContract.transferFrom(address(this), loan1.borrower, loan1.nftId);
             } else {
-                _transfer(address(this), loan1.borrower, loan1.amount / dexSwapRate);
+                _transfer(address(this), loan1.borrower, msg.value / dexSwapRate);
             }
+            emit LoanRepaid(msg.sender, msg.value, loanId);
         }
-
-        emit LoanRepaid(msg.sender, msg.value, loanId);
-        adjustDexSwapRate();
     }
 
     function makeLoanRequestByNft(IERC721 nftContract, uint256 nftId, uint256 loanAmount, uint256 deadline) external {
         require(deadline <= block.timestamp + maxLoanDuration, "Deadline exceeds max duration");
         nftContract.transferFrom(msg.sender, address(this), nftId);
-        loans[loanCounter] = Loan(deadline, loanAmount, address(0), msg.sender, true, nftContract, nftId, 0);
+        loans[loanCounter] = Loan(deadline, loanAmount, address(0), msg.sender, true, nftContract, nftId);
         emit LoanCreated(msg.sender, loanAmount, deadline);
         loanCounter++;
     }
@@ -135,9 +128,7 @@ contract DecentralizedFinance is ERC20 {
                 loan2.lender = msg.sender;
                 _transfer(msg.sender, address(this), loan2.amount / dexSwapRate);
                 payable(loan2.borrower).transfer(loan2.amount);
-                
                 emit LoanCreated(loan2.borrower, loan2.amount, loan2.deadline);
-                
                 break;
             }
         }
@@ -154,11 +145,5 @@ contract DecentralizedFinance is ERC20 {
             }
             delete loans[loanId];
         }
-    }
-
-    function adjustDexSwapRate() internal {
-        uint256 totalSupply = totalSupply();
-        uint256 newRate = (address(this).balance * 10**18) / totalSupply;
-        dexSwapRate = newRate;
     }
 }
