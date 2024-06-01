@@ -50,6 +50,7 @@ contract DecentralizedFinance is ERC20 {
         uint256 dexAmount = msg.value / dexSwapRate;
         _transfer(address(this), msg.sender, dexAmount);
         balance += msg.value;
+        adjustDexSwapRate();
     }
 
     function sellDex(uint256 dexAmount) external {
@@ -59,6 +60,19 @@ contract DecentralizedFinance is ERC20 {
         _transfer(msg.sender, address(this), dexAmount);
         payable(msg.sender).transfer(ethAmount);
         balance -= ethAmount;
+        adjustDexSwapRate();
+    }
+
+    function getBalance() public view onlyOwner returns (uint256) {
+        return address(this).balance;
+    }
+
+    function setDexSwapRate(uint256 rate) external onlyOwner {
+        dexSwapRate = rate;
+    }
+
+    function getDexBalance() public view returns (uint256) {
+        return balanceOf(msg.sender);
     }
 
     function loan(uint256 dexAmount, uint256 deadline) external {
@@ -70,40 +84,30 @@ contract DecentralizedFinance is ERC20 {
         loans[loanCounter] = Loan(deadline, loanValue, address(this), msg.sender, false, IERC721(address(0)), 0, 0);
         emit LoanCreated(msg.sender, loanValue, deadline);
         loanCounter++;
+        adjustDexSwapRate();
     }
 
-    function returnLoan(uint256 loanId, uint256 weiAmount) external {
+    function returnLoan(uint256 loanId) external payable {
         Loan storage loan1 = loans[loanId];
         require(loan1.borrower == msg.sender, "Only the borrower can repay the loan");
         require(block.timestamp <= loan1.deadline, "Loan deadline has passed");
 
         uint256 remainingAmount = loan1.amount - loan1.repaidAmount;
-        require(weiAmount <= remainingAmount, "Repayment exceeds the remaining loan amount");
+        require(msg.value <= remainingAmount, "Repayment exceeds the remaining loan amount");
 
-        loan1.repaidAmount += weiAmount;
-        balance += weiAmount;
+        loan1.repaidAmount += msg.value;
+        balance += msg.value;
         
         if (loan1.repaidAmount == loan1.amount) {
             if (loan1.isBasedNft) {
-                IERC721(loan1.nftContract).transferFrom(address(this), loan1.borrower, loan1.nftId);
+                loan1.nftContract.transferFrom(address(this), loan1.borrower, loan1.nftId);
             } else {
                 _transfer(address(this), loan1.borrower, loan1.amount / dexSwapRate);
             }
         }
 
-        emit LoanRepaid(msg.sender, weiAmount, loanId);
-    }
-
-    function getBalance() public view returns (uint256) {
-        return address(this).balance;
-    }
-
-    function setDexSwapRate(uint256 rate) external onlyOwner {
-        dexSwapRate = rate;
-    }
-
-    function getDexBalance() public view returns (uint256) {
-        return balanceOf(msg.sender);
+        emit LoanRepaid(msg.sender, msg.value, loanId);
+        adjustDexSwapRate();
     }
 
     function makeLoanRequestByNft(IERC721 nftContract, uint256 nftId, uint256 loanAmount, uint256 deadline) external {
@@ -140,6 +144,7 @@ contract DecentralizedFinance is ERC20 {
     }
 
     function checkLoan(uint256 loanId) external {
+        require(msg.sender == owner, "Only the owner can check the loan status");
         Loan storage checkedLoan = loans[loanId];
         if (block.timestamp > checkedLoan.deadline && checkedLoan.amount > 0) {
             if (checkedLoan.isBasedNft) {
@@ -149,5 +154,11 @@ contract DecentralizedFinance is ERC20 {
             }
             delete loans[loanId];
         }
+    }
+
+    function adjustDexSwapRate() internal {
+        uint256 totalSupply = totalSupply();
+        uint256 newRate = (address(this).balance * 10**18) / totalSupply;
+        dexSwapRate = newRate;
     }
 }
