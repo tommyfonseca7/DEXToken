@@ -23,7 +23,7 @@ let swapRate;
 const defi_contractAddress = "0x82Dfa413C6472EA7f3eCfa33320E68c06c2a33fB";
 const defi_contractABI = defi_abi;
 
-const nft_contractAddress = "0xd7Ca4e99F7C171B9ea2De80d3363c47009afaC5F";
+const nft_contractAddress = "0x982c381aaa90a1A4051c71158508081Ee30845c0";
 const nft_contractABI = nft_abi;
 
 window.connectMetaMask = async function () {
@@ -384,15 +384,46 @@ async function getRateEthToDex() {
 }
 
 // TODO
+// async function getAvailableNfts() {
+//   try {
+//     const availableNfts = await nft_contract.methods.getAvailableNfts().call();
+//     console.log("Available NFTs:", availableNfts);
+//     return availableNfts;
+//   } catch (error) {
+//     console.error("Error getting available NFTs:", error);
+//   }
+// }
+
 async function getAvailableNfts() {
   try {
-    const availableNfts = await nft_contract.methods.getAvailableNfts().call();
+    // Fetch total supply of NFTs from the contract
+    const totalSupply = await nft_contract.methods.totalSupply().call();
+    const availableNfts = [];
+
+    // Iterate through all NFTs to check ownership
+    for (let i = 1; i <= totalSupply; i++) { // Iterate from 1 to totalSupply
+      try {
+        // Check the owner of each NFT
+        const owner = await nft_contract.methods.ownerOf(i).call();
+
+        // If the owner is the DecentralizedFinance contract, consider it available
+        if (owner.toLowerCase() === defi_contractAddress.toLowerCase()) {
+          availableNfts.push(i);
+        }
+      } catch (error) {
+        console.error(`Error getting owner of NFT ${i}:`, error);
+      }
+    }
+
     console.log("Available NFTs:", availableNfts);
+    alert(`Available NFTs: ${availableNfts.join(', ')}`);
     return availableNfts;
   } catch (error) {
     console.error("Error getting available NFTs:", error);
   }
 }
+
+
 
 // TODO
 async function getTotalBorrowedAndNotPaidBackEth() {
@@ -586,3 +617,4 @@ window.checkLoanStatus = checkLoanStatus;
 window.getAllTokenURIs = getAllTokenURIs;
 window.getRateEthToDex = getRateEthToDex;
 window.openReturnLoanPopup = openReturnLoanPopup;
+window.getAvailableNfts = getAvailableNfts;
