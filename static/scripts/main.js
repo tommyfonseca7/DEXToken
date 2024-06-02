@@ -222,7 +222,7 @@ function displayLoans(loans) {
   });
 }
 
-// Function to open the popup and pre-fill the form (if needed)
+// Function to open the popup
 function openReturnLoanPopup() {
   document.getElementById("return-loan-popup").style.display = "block";
 }
