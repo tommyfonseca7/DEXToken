@@ -20,7 +20,7 @@ let userAccount;
 let opt = false;
 let swapRate;
 
-const defi_contractAddress = "0xFF6D49b1a4aECc1Fe6B3cc6De151Db08A111D394";
+const defi_contractAddress = "0xf46D6Db5015448E097cF2a57C6944600CbBdC846";
 const defi_contractABI = defi_abi;
 
 const nft_contractAddress = "0xd7Ca4e99F7C171B9ea2De80d3363c47009afaC5F";
@@ -67,60 +67,29 @@ setInterval(fetchBalance, 1500);
 async function fetchBalance() {
   let swapRateTest;
 
-  try {
-    swapRateTest = await getDexSwapRate();
-  } catch (error) {
-    console.error("Error getting DEX Swap Rate:", error);
-    return; // Exit the function if there's an error
-  }
-  getDex();
-  // getEthTotalBalance();
-  document.getElementById("wallet-balance-value").innerText = userBalanceInDex;
-  let userBalanceInWEI = userBalanceInDex * swapRateTest;
+  if (opt) {
+    try {
+      swapRateTest = await getDexSwapRate();
+    } catch (error) {
+      console.error("Error getting DEX Swap Rate:", error);
+      return; // Exit the function if there's an error
+    }
+    getDex();
+    // getEthTotalBalance();
+    document.getElementById("wallet-balance-value").innerText =
+      userBalanceInDex;
+    let userBalanceInWEI = userBalanceInDex * swapRateTest;
 
-  document.getElementById("wei-balance-value").innerText = userBalanceInWEI;
+    document.getElementById("wei-balance-value").innerText = userBalanceInWEI;
+  }
 }
 
-// Add event listener to the connect button
+// Add event listener to the connect MetaMask button
 document
   .getElementById("connect-button")
   .addEventListener("click", connectMetaMask);
 
-// Update the wallet address and balance values
-document.getElementById("wallet-address").innerText = userAccount;
-document.getElementById("wallet-balance-value").innerText = userBalanceInDex;
-
-// async function fetchBalance() {
-//   try {
-//     if (!defi_contract || !userAccount) {
-//       throw new Error("Contract or user account not initialized.");
-//     }
-
-//     console.log("Fetching balance for account:", userAccount);
-
-//     // Fetch the DEX token balance
-//     const userBalance = await defi_contract.methods
-//       .balanceOf(userAccount)
-//       .call();
-//     console.log("User balance in Wei:", userBalance);
-//     const balanceInEth = web3.utils.fromWei(userBalance, "ether");
-//     userBalanceInDex = balanceInEth;
-//     console.log("User balance in DEX tokens:", balanceInEth);
-
-//     document.getElementById(
-//       "balance"
-//     ).innerText = `Balance: ${balanceInEth} DEX`;
-//   } catch (error) {
-//     console.error("Error fetching balance", error);
-//     if (error.message.includes("Returned values aren't valid")) {
-//       console.error(
-//         "Possible causes: incorrect ABI, wrong contract address, or a non-synced node."
-//       );
-//     }
-//     document.getElementById("balance").innerText = "Error fetching balance";
-//   }
-// }
-
+//Gets the dex Swap rate from contract
 async function getDexSwapRate() {
   try {
     swapRate = await defi_contract.methods.getDexSwapRate().call();
@@ -131,13 +100,7 @@ async function getDexSwapRate() {
   return swapRate;
 }
 
-// async function setRateEthToDex(newRate) {
-//   const accounts = await web3.eth.getAccounts();
-//   await defi_contract.methods
-//     .setDexSwapRate(newRate)
-//     .send({ from: accounts[0] });
-// }
-
+//Sets new dex swap rate
 async function setRateEthToDex(newRate) {
   try {
     if (!defi_contract) {
@@ -159,8 +122,7 @@ async function setRateEthToDex(newRate) {
   }
 }
 
-// Add the following code to your main.js
-
+//Gets user's loans from contract
 async function getUserLoans() {
   try {
     if (!defi_contract || !userAccount) {
@@ -177,6 +139,7 @@ async function getUserLoans() {
   }
 }
 
+//displays user's loans from contract
 function displayLoans(loans) {
   const loanList = document.getElementById("loan-list");
   loanList.innerHTML = ""; // Clear previous loans
@@ -222,21 +185,30 @@ function displayLoans(loans) {
   });
 }
 
-// Function to open the popup
-function openReturnLoanPopup() {
-  document.getElementById("return-loan-popup").style.display = "block";
-}
-
-// Function to handle the loan return
+//TODO
 async function returnLoan(loanId, weiAmount) {
   try {
     if (!defi_contract || !userAccount) {
       throw new Error("Contract or user account not initialized.");
     }
 
-    await defi_contract.methods
-      .returnLoan(loanId)
-      .send({ from: userAccount, value: weiAmount });
+    // Ensure loanId is an integer and weiAmount is a string representing a numeric value in Wei
+    loanId = parseInt(loanId);
+    weiAmount = weiAmount;
+
+    if (isNaN(loanId) || isNaN(parseInt(weiAmount))) {
+      throw new Error("Invalid input values");
+    }
+
+    // Call the contract method
+    const result = await defi_contract.methods.returnLoan(loanId).send({
+      from: userAccount,
+      value: weiAmount,
+    });
+
+    const loanIdRetrieved = result.events.LoanRepaid.returnValues.loanId;
+    const amount = result.events.LoanRepaid.returnValues.amount;
+    alert(`Loan ${loanIdRetrieved} repaid with amount ${amount}`);
 
     // Hide the popup after successful return
     document.getElementById("return-loan-popup").style.display = "none";
@@ -248,35 +220,42 @@ async function returnLoan(loanId, weiAmount) {
   }
 }
 
-// Add event listener for closing the popup
+//TODO
+async function openReturnLoanPopup() {
+  document.getElementById("return-loan-popup").style.display = "block";
+}
+
+//TODO
+document
+  .getElementById("return-loan-form")
+  .addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    const loanId = document.getElementById("loan-id-input").value;
+    const weiAmount = document.getElementById("wei-amount-input").value;
+    const result = await defi_contract.methods
+      .returnLoan(loanId)
+      .send(weiAmount);
+    const loanIdRretriebed = result.events.LoanRepaid.returnValues.loanId;
+    const amount = result.events.LoanRepaid.returnValues.amount;
+    alert(`Loan ${loanIdRretriebed} repaid this ${amount}`);
+  });
+
+// Add event listener for closing the popup TODO
 document
   .getElementById("close-return-loan-popup")
   .addEventListener("click", function () {
     document.getElementById("return-loan-popup").style.display = "none";
   });
 
-// Add event listener for the "Return Loan" button to open the popup
+// Add event listener for the "Return Loan" button to open the popup TODO
 document
   .getElementById("return-loan-button")
   .addEventListener("click", function () {
     openReturnLoanPopup();
   });
 
-// Add event listener for form submission
-document
-  .getElementById("return-loan-form")
-  .addEventListener("submit", async function (event) {
-    event.preventDefault(); // Prevent form from submitting the traditional way
-    const loanId = document.getElementById("loan-id-input").value;
-    const weiAmount = document.getElementById("wei-amount-input").value;
-    await returnLoan(loanId, weiAmount);
-  });
-
-// Add event listener to fetch and display user loans
-document
-  .getElementById("get-user-loans-button")
-  .addEventListener("click", getUserLoans);
-
+// TODO
 async function listenToLoanCreation() {
   defi_contract.events
     .LoanCreated({})
@@ -300,6 +279,7 @@ async function listenToLoanCreation() {
     });
 }
 
+// TODO
 async function checkLoanStatus(loanId) {
   try {
     const loanStatus = await defi_contract.methods.checkLoan(loanId).call();
@@ -309,6 +289,7 @@ async function checkLoanStatus(loanId) {
   }
 }
 
+// Buys dex - connects with contract
 async function buyDex() {
   try {
     const ethAmount = prompt(
@@ -337,6 +318,7 @@ async function buyDex() {
   }
 }
 
+// Gets user's Dex balance
 async function getDex() {
   const dexBalance = await defi_contract.methods
     .getDexBalance()
@@ -344,6 +326,7 @@ async function getDex() {
   userBalanceInDex = dexBalance;
 }
 
+// SEll DEX - Contract connection to sell user's DEX balance
 async function sellDex() {
   try {
     const DEXAmount = prompt(
@@ -361,6 +344,7 @@ async function sellDex() {
   }
 }
 
+// LOAN - Contact connection to loan user's ETH for DEX TOKENS
 async function loan(dexAmount, deadline) {
   const accounts = await web3.eth.getAccounts();
   await defi_contract.methods
@@ -368,6 +352,7 @@ async function loan(dexAmount, deadline) {
     .send({ from: accounts[0] });
 }
 
+// GETS the contract total ETH
 async function getEthTotalBalance() {
   try {
     if (!defi_contract || !userAccount) {
@@ -384,11 +369,13 @@ async function getEthTotalBalance() {
   }
 }
 
+// GETS THE DEX SWAP RATE
 async function getRateEthToDex() {
   const rate = await defi_contract.methods.dexSwapRate().call();
   console.log("ETH to DEX Rate:", rate);
 }
 
+// TODO
 async function getAvailableNfts() {
   try {
     const availableNfts = await nft_contract.methods.getAvailableNfts().call();
@@ -399,6 +386,7 @@ async function getAvailableNfts() {
   }
 }
 
+// TODO
 async function getTotalBorrowedAndNotPaidBackEth() {
   try {
     const totalBorrowedEth = await defi_contract.methods
@@ -411,6 +399,7 @@ async function getTotalBorrowedAndNotPaidBackEth() {
   }
 }
 
+// TODO
 async function makeLoanRequestByNft(nftContract, nftId, loanAmount, deadline) {
   const accounts = await web3.eth.getAccounts();
   await defi_contract.methods
@@ -418,6 +407,7 @@ async function makeLoanRequestByNft(nftContract, nftId, loanAmount, deadline) {
     .send({ from: accounts[0] });
 }
 
+// TODO
 async function cancelLoanRequestByNft(nftContract, nftId) {
   const accounts = await web3.eth.getAccounts();
   await defi_contract.methods
@@ -425,6 +415,7 @@ async function cancelLoanRequestByNft(nftContract, nftId) {
     .send({ from: accounts[0] });
 }
 
+// TODO
 async function loanByNft(nftContract, nftId) {
   const accounts = await web3.eth.getAccounts();
   await defi_contract.methods
@@ -432,6 +423,7 @@ async function loanByNft(nftContract, nftId) {
     .send({ from: accounts[0] });
 }
 
+// TODO
 async function checkLoan(loanId) {
   try {
     const loanStatus = await defi_contract.methods.checkLoan(loanId).call();
@@ -442,6 +434,7 @@ async function checkLoan(loanId) {
   }
 }
 
+// TODO
 async function getAllTokenURIs() {
   try {
     const tokenURIs = await nft_contract.methods.getAllTokenURIs().call();
@@ -452,32 +445,7 @@ async function getAllTokenURIs() {
   }
 }
 
-async function displayLoansWithStatusButtons() {
-  try {
-    const loanCount = await defi_contract.methods.getLoanCount().call();
-    const loanList = document.getElementById("loan-list");
-    loanList.innerHTML = ""; // Clear previous loans
-
-    for (let i = 0; i < loanCount; i++) {
-      const loan = await defi_contract.methods.getLoanById(i).call();
-      const { borrower, amount, deadline } = loan;
-
-      const loanElement = document.createElement("div");
-      loanElement.classList.add("loan-item");
-      loanElement.innerHTML = `
-                <p>Loan ID: ${i}</p>
-                <p>Borrower: ${borrower}</p>
-                <p>Amount: ${amount}</p>
-                <p>Deadline: ${new Date(deadline * 1000).toLocaleString()}</p>
-                <button onclick="checkLoanStatus(${i})">Check Status</button>
-            `;
-      loanList.appendChild(loanElement);
-    }
-  } catch (error) {
-    console.error("Error displaying loans:", error);
-  }
-}
-
+// OPEN POPUP
 document.addEventListener("DOMContentLoaded", function () {
   var popup = document.getElementById("popup");
   var popupDex = document.getElementById("popupdex");
@@ -586,6 +554,7 @@ document
 
     closeForm();
   });
+
 window.displayLoans = displayLoans;
 window.getUserLoans = getUserLoans;
 window.openForm = openForm;
@@ -608,6 +577,5 @@ window.getAvailableNfts = getAvailableNfts;
 window.getTotalBorrowedAndNotPaidBackEth = getTotalBorrowedAndNotPaidBackEth;
 window.checkLoanStatus = checkLoanStatus;
 window.getAllTokenURIs = getAllTokenURIs;
-window.displayLoansWithStatusButtons = displayLoansWithStatusButtons;
 window.getRateEthToDex = getRateEthToDex;
 window.openReturnLoanPopup = openReturnLoanPopup;
