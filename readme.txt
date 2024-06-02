@@ -23,8 +23,6 @@ The DEX to Wei exchange rate is automatically adjusted based on the following ru
 - Increase Rate: When DEX tokens are bought or a loan is created, the demand for DEX increases, leading to a higher exchange rate.
 - Decrease Rate: When DEX tokens are sold or a loan is repaid, the supply of DEX increases, leading to a lower exchange rate.
 
-The exact adjustment mechanism can be customized within the smart contract's logic to reflect real-time market dynamics.
-
 ### Adjustment Rule for DEX to Wei Exchange Rate
 
 1. Initial Setup:
