@@ -242,10 +242,24 @@ contract DecentralizedFinance is ERC20 {
         loanCounter++;
     }
 
-    function cancelLoanRequestByNft(
-        IERC721 nftContract,
-        uint256 nftId
-    ) external {
+    // function cancelLoanRequestByNft(
+    //     IERC721 nftContract,
+    //     uint256 nftId
+    // ) external {
+    //     for (uint256 i = 0; i < loanCounter; i++) {
+    //         if (
+    //             loans[i].nftContract == nftContract &&
+    //             loans[i].nftId == nftId &&
+    //             loans[i].borrower == msg.sender
+    //         ) {
+    //             nftContract.transferFrom(address(this), msg.sender, nftId);
+    //             delete loans[i];
+    //             break;
+    //         }
+    //     }
+    // }
+
+    function cancelLoanRequestByNft(IERC721 nftContract, uint256 nftId) external {
         for (uint256 i = 0; i < loanCounter; i++) {
             if (
                 loans[i].nftContract == nftContract &&
@@ -253,11 +267,33 @@ contract DecentralizedFinance is ERC20 {
                 loans[i].borrower == msg.sender
             ) {
                 nftContract.transferFrom(address(this), msg.sender, nftId);
-                delete loans[i];
+                loans[i] = loans[loanCounter - 1]; // Move o último elemento para o local a ser excluído
+                delete loans[loanCounter - 1]; // Exclui o último elemento
+                loanCounter--;
                 break;
             }
         }
     }
+
+
+    // function loanByNft(IERC721 nftContract, uint256 nftId) external {
+    //     for (uint256 i = 0; i < loanCounter; i++) {
+    //         Loan storage loan2 = loans[i];
+    //         if (
+    //             address(loan2.nftContract) == address(nftContract) &&
+    //             loan2.nftId == nftId &&
+    //             loan2.lender == address(0)
+    //         ) {
+    //             loan2.lender = msg.sender;
+    //             _transfer(msg.sender, address(this), loan2.amount);
+    //             payable(loan2.borrower).transfer(loan2.amount);
+
+    //             // emit LoanCreated(loan2.borrower, loan2.amount, loan2.deadline);
+
+    //             break;
+    //         }
+    //     }
+    // }
 
     function loanByNft(IERC721 nftContract, uint256 nftId) external {
         for (uint256 i = 0; i < loanCounter; i++) {
@@ -268,10 +304,10 @@ contract DecentralizedFinance is ERC20 {
                 loan2.lender == address(0)
             ) {
                 loan2.lender = msg.sender;
-                _transfer(msg.sender, address(this), loan2.amount);
                 payable(loan2.borrower).transfer(loan2.amount);
+                _transfer(msg.sender, address(this), loan2.amount);
 
-                // emit LoanCreated(loan2.borrower, loan2.amount, loan2.deadline);
+                emit LoanCreated(loan2.borrower, loan2.amount, loan2.deadline, i);
 
                 break;
             }
