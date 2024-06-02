@@ -195,22 +195,28 @@ function displayLoans(loans) {
 
     const loanElement = document.createElement("div");
     loanElement.classList.add("loan-item");
+    loanElement.style.display = "flex";
+    loanElement.style.justifyContent = "space-between";
+    loanElement.style.alignItems = "center";
+    loanElement.style.flexDirection = "column";
+    loanElement.style.boxShadow = "0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22)";
+    loanElement.style.padding = "20px";
+    loanElement.style.margin = "20px";
+    loanElement.style.borderRadius = "5%";
+    
     loanElement.innerHTML = `
-          <p>Loan ID: ${index}</p>
-          <p>Borrower: ${borrower}</p>
-          <p>Amount: ${amount.toString()}</p>
-          <p>Deadline: ${new Date(Number(deadline) * 1000).toLocaleString()}</p>
-          <p>Lender: ${lender}</p>
-          <p>Repaid Amount: ${repaidAmount.toString()}</p>
-          ${
-            isBasedNft
-              ? `<p>NFT Contract: ${nftContract}</p><p>NFT ID: ${nftId.toString()}</p>`
-              : ""
-          }
-      `;
+      <p>Loan ID: ${index}</p>
+      <p>Borrower: ${borrower}</p>
+      <p>Amount: ${amount.toString()}</p>
+      <p>Deadline: ${new Date(Number(deadline) * 1000).toLocaleString()}</p>
+      <p>Lender: ${lender}</p>
+      <p>Repaid Amount: ${repaidAmount.toString()}</p>
+      ${isBasedNft ? `<p>NFT Contract: ${nftContract}</p><p>NFT ID: ${nftId.toString()}</p>` : ""}
+    `;
     loanList.appendChild(loanElement);
   });
 }
+
 
 // Add event listener to fetch and display user loans
 document
