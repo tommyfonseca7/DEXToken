@@ -42,7 +42,7 @@ contract DecentralizedFinance is ERC20 {
     constructor() payable ERC20("DEX", "DEX") {
         require(
             msg.value == 100000000000000000 wei,
-            "Initial funding must be 1 ETH"
+            "Initial funding must be 0.1 ETH"
         );
         owner = msg.sender;
         maxLoanDuration = 1 days;
@@ -259,7 +259,10 @@ contract DecentralizedFinance is ERC20 {
     //     }
     // }
 
-    function cancelLoanRequestByNft(IERC721 nftContract, uint256 nftId) external {
+    function cancelLoanRequestByNft(
+        IERC721 nftContract,
+        uint256 nftId
+    ) external {
         for (uint256 i = 0; i < loanCounter; i++) {
             if (
                 loans[i].nftContract == nftContract &&
@@ -274,7 +277,6 @@ contract DecentralizedFinance is ERC20 {
             }
         }
     }
-
 
     // function loanByNft(IERC721 nftContract, uint256 nftId) external {
     //     for (uint256 i = 0; i < loanCounter; i++) {
@@ -307,7 +309,12 @@ contract DecentralizedFinance is ERC20 {
                 payable(loan2.borrower).transfer(loan2.amount);
                 _transfer(msg.sender, address(this), loan2.amount);
 
-                emit LoanCreated(loan2.borrower, loan2.amount, loan2.deadline, i);
+                emit LoanCreated(
+                    loan2.borrower,
+                    loan2.amount,
+                    loan2.deadline,
+                    i
+                );
 
                 break;
             }
