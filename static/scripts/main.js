@@ -20,7 +20,7 @@ let userAccount;
 let opt = false;
 let swapRate;
 
-const defi_contractAddress = "0x040FAF4F28528b6188534B85AC8daEB0d4FD7ff8";
+const defi_contractAddress = "0x1640d8B21d6b307d90B8892Ad184884a4dF35C4a";
 const defi_contractABI = defi_abi;
 
 const nft_contractAddress = "0xd7Ca4e99F7C171B9ea2De80d3363c47009afaC5F";
@@ -62,25 +62,24 @@ window.connectMetaMask = async function () {
   }
 };
 
-setInterval(async () => {
-  if (opt) {
-    let swapRateTest;
+setInterval(fetchBalance, 1500);
 
-    try {
-      swapRateTest = await getDexSwapRate();
-    } catch (error) {
-      console.error("Error getting DEX Swap Rate:", error);
-      return; // Exit the function if there's an error
-    }
-    getDex();
-    getEthTotalBalance;
-    document.getElementById("wallet-balance-value").innerText =
-      userBalanceInDex;
-    let userBalanceInWEI = userBalanceInDex * swapRateTest;
+async function fetchBalance() {
+  let swapRateTest;
 
-    document.getElementById("wei-balance-value").innerText = userBalanceInWEI;
+  try {
+    swapRateTest = await getDexSwapRate();
+  } catch (error) {
+    console.error("Error getting DEX Swap Rate:", error);
+    return; // Exit the function if there's an error
   }
-}, 1500);
+  getDex();
+  // getEthTotalBalance();
+  document.getElementById("wallet-balance-value").innerText = userBalanceInDex;
+  let userBalanceInWEI = userBalanceInDex * swapRateTest;
+
+  document.getElementById("wei-balance-value").innerText = userBalanceInWEI;
+}
 
 // Add event listener to the connect button
 document
@@ -210,6 +209,7 @@ async function buyDex() {
         value: ethAmountInWei,
       });
       alert("DEX purchased successfully");
+      fetchBalance();
       //TODO FUNCAO PARA ATUALIZAR VALORES NA CARTEIRA AUTOMATICAMENTE APOS COMPRAR
     } catch (error) {
       console.error("Error buying DEX", error);
@@ -236,6 +236,7 @@ async function sellDex() {
     }
     await defi_contract.methods.sellDex(DEXAmount).send({ from: userAccount });
     alert("DEX sold successfully");
+    fetchBalance();
     //TODO FUNCAO PARA ATUALIZAR VALORES NA CARTEIRA AUTOMATICAMENTE APOS VENDER
   } catch (error) {
     console.error("Error selling DEX tokens:", error);
@@ -262,20 +263,10 @@ async function getEthTotalBalance() {
       throw new Error("Contract or user account not initialized.");
     }
 
-    // Verifica se o usuário é o proprietário
-    const accounts = await web3.eth.getAccounts();
-
-    if (accounts[0] != "0x604eCa2840a80CA0442193422cd4d760b96FBaAD") {
-      ethTotalBalance =
-        "You are not the owner. Only the owner can see the ETH contract balance.";
-      return;
-    }
-
     // Se o usuário for o proprietário, buscar o saldo
-    const balance = await defi_contract.methods
-      .getBalance()
-      .call({ from: accounts[0] });
+    const balance = await defi_contract.methods.getBalance().call();
     ethTotalBalance = web3.utils.fromWei(balance, "ether"); // Converte Wei para Ether para exibição
+    fetchBalance();
   } catch (error) {
     console.error("Error getting total ETH balance:", error);
     ethTotalBalance = "Error getting balance. Please try again.";
@@ -378,41 +369,31 @@ async function displayLoansWithStatusButtons() {
 
 document.addEventListener("DOMContentLoaded", function () {
   var popup = document.getElementById("popup");
+  var popupDex = document.getElementById("popupdex");
   var openPopupBtn = document.getElementById("get-eth-total-balance-button");
-  var closeBtn = document.querySelector(".close-btn");
+  var openPopupDexBtn = document.getElementById("get-rate-eth-to-dex-button");
+  var closePopupBtn = document.getElementById("close-popup");
+  var closePopupDexBtn = document.getElementById("close-popupdex");
 
-  // Open the popup
+  // Open the ETH total balance popup
   openPopupBtn.onclick = async function () {
     popup.style.display = "block";
 
     if (opt) {
-      await getEthTotalBalance(); // Busca o saldo antes de exibir
+      await getEthTotalBalance(); // Fetch balance before displaying
     }
 
     document.getElementById("eth-total-balance").innerText = ethTotalBalance;
   };
 
-  // Close the popup
-  closeBtn.onclick = function () {
+  // Close the ETH total balance popup
+  closePopupBtn.onclick = function () {
     popup.style.display = "none";
   };
 
-  // Close the popup when clicking outside of the popup content
-  window.onclick = function (event) {
-    if (event.target == popup) {
-      popup.style.display = "none";
-    }
-  };
-});
-
-document.addEventListener("DOMContentLoaded", function () {
-  var popup = document.getElementById("popupdex");
-  var openPopupBtn = document.getElementById("get-rate-eth-to-dex-button");
-  var closeBtn = document.querySelector(".close-btn");
-
-  // Open the popup
-  openPopupBtn.onclick = async function () {
-    popup.style.display = "block";
+  // Open the DEX rate popup
+  openPopupDexBtn.onclick = async function () {
+    popupDex.style.display = "block";
 
     if (opt) {
       await getRateEthToDex();
@@ -421,15 +402,18 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("dexrate").innerText = swapRate;
   };
 
-  // Close the popup
-  closeBtn.onclick = function () {
-    popup.style.display = "none";
+  // Close the DEX rate popup
+  closePopupDexBtn.onclick = function () {
+    popupDex.style.display = "none";
   };
 
   // Close the popup when clicking outside of the popup content
   window.onclick = function (event) {
     if (event.target == popup) {
       popup.style.display = "none";
+    }
+    if (event.target == popupDex) {
+      popupDex.style.display = "none";
     }
   };
 });

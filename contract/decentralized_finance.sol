@@ -38,9 +38,9 @@ contract DecentralizedFinance is ERC20 {
             "Initial funding must be 1 ETH"
         );
         owner = msg.sender;
-        maxLoanDuration = 30 days;
+        maxLoanDuration = 1 days;
         dexSwapRate = 1000;
-        balance = (msg.value * 10 ** 18);
+        balance = address(this).balance;
         loanCounter = 0;
         _mint(address(this), 10 ** 18);
     }
@@ -50,57 +50,89 @@ contract DecentralizedFinance is ERC20 {
         _;
     }
     // works
-    function getDexSwapRate() public view returns (uint256) {
-        return dexSwapRate;
+    function calculateNewRate() internal {
+        uint256 initialWeiBalance = 100000000000000000;
+
+        bool increase = address(this).balance > initialWeiBalance;
+        bool decrease = address(this).balance < initialWeiBalance;
+
+        if (increase) {
+            dexSwapRate = dexSwapRate + 100; // Aumento de 10% face ao rate inicial
+        } else if (decrease) {
+            dexSwapRate = dexSwapRate - 100; // Diminuição de 10% face ao rate inicial
+        }
     }
-
-    // function sellDex(uint256 dexAmount) external{
-    //     address user = msg.sender;
-    //     uint256 oldValue = balanceOf(contrato);
-    //     emit oldBalance(oldValue);
-    //     require(balanceOf(user) >= dexAmount, "Not enough DEX available");
-    //     uint256 AmountInWei = dexAmount * dexSwapRate;
-    //     uint256 ethAmount = AmountInWei / 10**18;
-    //     require(contrato.balance >= ethAmount, "Not enough ETH available");
-    //     _transfer(user,contrato, dexAmount);
-    //     payable(user).transfer(AmountInWei);
-    //     emit usu(user, contrato);
-    //     adjustDexSwapRate(oldValue);
-
-    // }
 
     // works
     function buyDex() external payable {
         require(msg.value > 0, "You need to send some ETH");
         uint256 dexAmount = (msg.value / dexSwapRate);
         _transfer(address(this), msg.sender, dexAmount);
-        balance += dexAmount;
+        balance += msg.value;
+        calculateNewRate();
     }
     // works
     function sellDex(uint256 dexAmount) external {
-        uint256 ethAmount = dexAmount / dexSwapRate;
+        address user = msg.sender;
+        require(balanceOf(user) >= dexAmount, "Not enough DEX available");
+        uint256 weiAmount = dexAmount * dexSwapRate;
         require(
-            address(this).balance >= ethAmount,
+            address(this).balance >= weiAmount,
             "Not enough ETH in contract"
         );
         _transfer(msg.sender, address(this), (dexAmount));
-        payable(msg.sender).transfer(ethAmount);
-        balance -= ethAmount;
+        payable(msg.sender).transfer(weiAmount);
+        balance -= weiAmount;
+        calculateNewRate();
+    }
+
+    function futureDeadline() public view returns (uint256) {
+        return block.timestamp + 3600; // Example deadline set to 1 hour in the future
     }
 
     function loan(uint256 dexAmount, uint256 deadline) external {
         require(
+            deadline + block.timestamp > block.timestamp,
+            "Deadline must be in the future"
+        ); // Ensure deadline is in the future
+        require(
             deadline <= block.timestamp + maxLoanDuration,
             "Deadline exceeds max duration"
-        );
+        ); // Ensure deadline is within max duration
         require(
             balanceOf(address(this)) >= dexAmount,
             "Not enough DEX balance in contract"
+        ); // Ensure contract has enough tokens
+
+        uint256 initialEthToBeLoaned = dexAmount * dexSwapRate; // Calculate initial ETH amount based on dexAmount and swap rate
+        uint256 elapsedTime = deadline - block.timestamp; // Calculate remaining time until deadline
+        uint256 value;
+
+        // Determine the value to be loaned based on the remaining time
+        if (elapsedTime >= (maxLoanDuration * 3) / 4) {
+            value = (initialEthToBeLoaned * 75) / 100;
+        } else if (elapsedTime >= maxLoanDuration / 2) {
+            value = (initialEthToBeLoaned * 50) / 100;
+        } else if (elapsedTime >= maxLoanDuration / 4) {
+            value = (initialEthToBeLoaned * 25) / 100;
+        } else {
+            value = initialEthToBeLoaned;
+        }
+
+        // Ensure the contract has enough ETH balance to transfer
+        require(
+            address(this).balance >= value,
+            "Not enough ETH balance in contract"
         );
+
+        // Transfer tokens and ETH to the borrower
         _transfer(address(this), msg.sender, dexAmount);
+        payable(msg.sender).transfer(value);
+
+        // Record the loan details
         loans[loanCounter] = Loan(
             deadline,
-            dexAmount,
+            value,
             address(this),
             msg.sender,
             false,
@@ -108,7 +140,7 @@ contract DecentralizedFinance is ERC20 {
             0,
             0
         );
-        emit LoanCreated(msg.sender, dexAmount, deadline);
+        emit LoanCreated(msg.sender, value, deadline);
         loanCounter++;
     }
 
@@ -145,16 +177,21 @@ contract DecentralizedFinance is ERC20 {
     }
 
     // works
-    function getBalance() public view onlyOwner returns (uint256) {
-        return (address(this).balance * dexSwapRate); //WEI
+    function getBalance() public view returns (uint256) {
+        return (address(this).balance); //WEI of contract
     }
 
     function getDexBalance() external view returns (uint256) {
-        return (balanceOf(msg.sender)); //DEX
+        return (balanceOf(msg.sender)); //DEX of user
+        // return (msg.sender).balance;
     }
 
     function setDexSwapRate(uint256 rate) external onlyOwner {
         dexSwapRate = rate; //WEI
+    }
+
+    function getDexSwapRate() public view returns (uint256) {
+        return dexSwapRate;
     }
 
     function makeLoanRequestByNft(
