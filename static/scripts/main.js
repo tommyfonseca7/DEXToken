@@ -217,6 +217,48 @@ function displayLoans(loans) {
   });
 }
 
+// Function to open the popup and pre-fill the form (if needed)
+function openReturnLoanPopup() {
+  document.getElementById("return-loan-popup").style.display = "block";
+}
+
+// Function to handle the loan return
+async function returnLoan(loanId, weiAmount) {
+  try {
+    if (!defi_contract || !userAccount) {
+      throw new Error("Contract or user account not initialized.");
+    }
+
+    await defi_contract.methods.returnLoan(loanId).send({ from: userAccount, value: weiAmount });
+
+    // Hide the popup after successful return
+    document.getElementById("return-loan-popup").style.display = "none";
+
+    // Refresh the loan list
+    await getUserLoans();
+  } catch (error) {
+    console.error("Error returning loan:", error);
+  }
+}
+
+// Add event listener for closing the popup
+document.getElementById("close-return-loan-popup").addEventListener("click", function() {
+  document.getElementById("return-loan-popup").style.display = "none";
+});
+
+// Add event listener for the "Return Loan" button to open the popup
+document.getElementById("return-loan-button").addEventListener("click", function() {
+  openReturnLoanPopup();
+});
+
+// Add event listener for form submission
+document.getElementById("return-loan-form").addEventListener("submit", async function(event) {
+  event.preventDefault(); // Prevent form from submitting the traditional way
+  const loanId = document.getElementById("loan-id-input").value;
+  const weiAmount = document.getElementById("wei-amount-input").value;
+  await returnLoan(loanId, weiAmount);
+});
+
 
 // Add event listener to fetch and display user loans
 document
@@ -563,3 +605,5 @@ window.checkLoanStatus = checkLoanStatus;
 window.getAllTokenURIs = getAllTokenURIs;
 window.displayLoansWithStatusButtons = displayLoansWithStatusButtons;
 window.getRateEthToDex = getRateEthToDex;
+window.returnLoan = returnLoan;
+window.openReturnLoanPopup = openReturnLoanPopup;

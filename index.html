@@ -76,7 +76,7 @@
       <div class="loan-container">
         <h2>Loans:</h2>
         <button id="loan-button" onclick="openForm()">Loan</button>
-        <button id="return-loan-button" onclick="returnLoan()">
+        <button id="return-loan-button" onclick="openReturnLoanPopup()">
           Return Loan
         </button>
         <button
@@ -131,6 +131,22 @@
         <p id="dexrate"></p>
       </div>
     </div>
+
+    <div id="return-loan-popup" class="popup">
+      <div class="popup-content">
+        <span class="close-btn" id="close-return-loan-popup">&times;</span>
+        <h2>Return Loan</h2>
+        <form id="return-loan-form">
+          <label for="loan-id-input">Loan ID:</label>
+          <input type="text" id="loan-id-input" name="loan-id-input" required><br>
+          <label for="wei-amount-input">Wei Amount:</label>
+          <input type="text" id="wei-amount-input" name="wei-amount-input" required><br>
+          <button type="submit">Return Loan</button>
+        </form>
+      </div>
+    </div>
+
+
 
     <div class="form-popup" id="loanForm">
         <form class="form-container" id="loanForm">
