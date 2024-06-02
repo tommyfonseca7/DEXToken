@@ -591,49 +591,113 @@ document
   .addEventListener("submit", async function (event) {
     event.preventDefault();
 
-    const dexAmount = document.getElementById("dexAmount").value;
+    const dexAmount = BigInt(document.getElementById("dexAmount").value);
     const duration = document.querySelector(
       'input[name="duration"]:checked'
     ).value;
 
-    const blockTimestamp = await defi_contract.methods
-      .getBlockTimestamp()
-      .call();
-    console.log("block timestamp: ", blockTimestamp);
+    try {
+      const blockTimestamp = BigInt(
+        await defi_contract.methods.getBlockTimestamp().call()
+      );
+      console.log("block timestamp:", blockTimestamp.toString());
 
-    // Convert duration to seconds
-    let LoanDuration = 0;
-    switch (duration) {
-      case "6h":
-        LoanDuration = parseInt(blockTimestamp) + 6 * 3600;
-        break;
-      case "12h":
-        LoanDuration = parseInt(blockTimestamp) + 12 * 3600;
-        break;
-      case "18h":
-        LoanDuration = parseInt(blockTimestamp) + 18 * 3600;
-        break;
-      case "24h":
-        LoanDuration = parseInt(blockTimestamp) + 24 * 3600;
-        break;
-      default:
-        console.error("Invalid duration");
+      // Convert duration to seconds
+      let LoanDuration = BigInt(0);
+      const oneHourInSeconds = 3600n; // Use BigInt for constants
+
+      switch (duration) {
+        case "6h":
+          LoanDuration = blockTimestamp + 6n * oneHourInSeconds;
+          break;
+        case "12h":
+          LoanDuration = blockTimestamp + 12n * oneHourInSeconds;
+          break;
+        case "18h":
+          LoanDuration = blockTimestamp + 18n * oneHourInSeconds;
+          break;
+        case "24h":
+          LoanDuration = blockTimestamp + 24n * oneHourInSeconds;
+          break;
+        default:
+          console.error("Invalid duration");
+          return;
+      }
+
+      console.log("Loan Duration:", LoanDuration.toString());
+
+      // Validate parameters before calling the smart contract
+      if (dexAmount <= 0n) {
+        console.error("Invalid DEX amount");
         return;
+      }
+
+      const dexBalance = BigInt(
+        await defi_contract.methods.balanceOf(userAccount).call()
+      );
+      console.log("User's DEX Balance:", dexBalance.toString());
+
+      if (dexBalance < dexAmount) {
+        console.error("Not enough DEX tokens");
+        return;
+      }
+
+      const contractDexBalance = BigInt(
+        await defi_contract.methods.balanceOf(defi_contractAddress).call()
+      );
+      console.log("Contract's DEX Balance:", contractDexBalance.toString());
+
+      const contractEthBalance = BigInt(
+        await defi_contract.methods.getBalance().call()
+      );
+      console.log("Contract's ETH Balance:", contractEthBalance.toString());
+
+      const swapRate = BigInt(
+        await defi_contract.methods.getDexSwapRate().call()
+      );
+      console.log("DEX Swap Rate:", swapRate.toString());
+
+      const initialEthToBeLoaned = dexAmount * swapRate;
+      console.log("Initial ETH to be loaned:", initialEthToBeLoaned.toString());
+
+      // Ensure the contract has enough ETH to fulfill the loan
+      if (contractEthBalance < initialEthToBeLoaned) {
+        console.error("Not enough ETH balance in contract");
+        return;
+      }
+
+      // Call the loan function from the smart contract with increased gas limit
+      const result = await defi_contract.methods
+        .loan(dexAmount.toString(), LoanDuration.toString())
+        .send({ from: userAccount, gas: 3000000 }) // Increased gas limit
+        .on("transactionHash", function (hash) {
+          console.log("Transaction hash:", hash);
+        })
+        .on("receipt", function (receipt) {
+          console.log("Transaction receipt:", receipt);
+        })
+        .on("confirmation", function (confirmationNumber, receipt) {
+          console.log("Transaction confirmation:", confirmationNumber, receipt);
+        })
+        .on("error", function (error) {
+          console.error("Transaction error:", error);
+          if (error.message.includes("revert")) {
+            alert(
+              "Transaction reverted. Please check the console for details."
+            );
+          }
+        });
+
+      // Retrieve loan ID from the event logs
+      const loanId = result.events.LoanCreated.returnValues.loanId;
+
+      alert(`Loan created successfully! Loan ID: ${loanId}`);
+
+      closeForm();
+    } catch (error) {
+      console.error("Error creating loan:", error.message || error);
+      alert("Error creating loan. See console for details.");
     }
-
-    console.log("Loan Durantion;", LoanDuration);
-
-    // Call the loan function from the smart contract
-    const result = await defi_contract.methods
-      .loan(dexAmount, LoanDuration)
-      .send({ from: userAccount });
-
-    // Retrieve loan ID from the event logs
-    const loanId = result.events.LoanCreated.returnValues.loanId;
-
-    alert(`Loan created successfully! Loan ID: ${loanId}`);
-
-    closeForm();
   });
 
 window.displayLoans = displayLoans;
