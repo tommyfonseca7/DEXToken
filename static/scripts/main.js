@@ -405,6 +405,35 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 });
 
+document.addEventListener("DOMContentLoaded", function () {
+  var popup = document.getElementById("popupdex");
+  var openPopupBtn = document.getElementById("get-rate-eth-to-dex-button");
+  var closeBtn = document.querySelector(".close-btn");
+
+  // Open the popup
+  openPopupBtn.onclick = async function () {
+    popup.style.display = "block";
+
+    if (opt) {
+      await getRateEthToDex();
+    }
+
+    document.getElementById("dexrate").innerText = swapRate;
+  };
+
+  // Close the popup
+  closeBtn.onclick = function () {
+    popup.style.display = "none";
+  };
+
+  // Close the popup when clicking outside of the popup content
+  window.onclick = function (event) {
+    if (event.target == popup) {
+      popup.style.display = "none";
+    }
+  };
+});
+
 window.connectMetaMask = connectMetaMask;
 window.buyDex = buyDex;
 window.getDex = getDex;
@@ -424,3 +453,4 @@ window.getTotalBorrowedAndNotPaidBackEth = getTotalBorrowedAndNotPaidBackEth;
 window.checkLoanStatus = checkLoanStatus;
 window.getAllTokenURIs = getAllTokenURIs;
 window.displayLoansWithStatusButtons = displayLoansWithStatusButtons;
+window.getRateEthToDex = getRateEthToDex;
