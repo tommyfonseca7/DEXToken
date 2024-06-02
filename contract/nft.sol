@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.17;
+pragma solidity 0.8.24;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
@@ -22,8 +22,20 @@ contract SimpleNFT is ERC721URIStorage, Ownable {
         _setTokenURI(tokenId, tokenURI);
     }
 
-    // Added (maybe not ideal)
     function totalSupply() public view returns (uint256) {
         return tokenIdCounter.current();
+    }
+
+    function availableNFTs() public view returns (uint256[] memory, string[] memory) {
+        uint256 total = totalSupply();
+        uint256[] memory tokenIds = new uint256[](total);
+        string[] memory tokenURIs = new string[](total);
+
+        for (uint256 i = 1; i <= total; i++) {
+            tokenIds[i - 1] = i;
+            tokenURIs[i - 1] = tokenURI(i);
+        }
+
+        return (tokenIds, tokenURIs);
     }
 }

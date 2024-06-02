@@ -20,10 +20,10 @@ let userAccount;
 let opt = false;
 let swapRate;
 
-const defi_contractAddress = "0xB33a26a9aF83EC7382933Ab445e26E4429352a55";
+const defi_contractAddress = "0x762E238C3030cF8CbD7d59BDE9AcAe305a0df85e";
 const defi_contractABI = defi_abi;
 
-const nft_contractAddress = "0x0c6e24319281c54de5f0C2102E8A7e38CaA4c78C";
+const nft_contractAddress = "0x3aC5FF5a0DcAF406C84F2ed27e89E12616e85BA1";
 const nft_contractABI = nft_abi;
 
 window.connectMetaMask = async function () {
@@ -436,28 +436,22 @@ async function getRateEthToDex() {
 async function getAvailableNfts() {
   try {
     // Fetch total supply of NFTs from the contract
-    const totalSupply = await nft_contract.methods.totalSupply().call();
-    const availableNfts = [];
+    const availableNFTs = await nft_contract.methods.availableNFTs().call();
 
-    // Iterate through all NFTs to check ownership
-    for (let i = 1; i <= totalSupply; i++) {
-      // Iterate from 1 to totalSupply
-      try {
-        // Check the owner of each NFT
-        const owner = await nft_contract.methods.ownerOf(i).call();
 
-        // If the owner is the DecentralizedFinance contract, consider it available
-        if (owner.toLowerCase() === defi_contractAddress.toLowerCase()) {
-          availableNfts.push(i);
-        }
-      } catch (error) {
-        console.error(`Error getting owner of NFT ${i}:`, error);
-      }
+    // Extract the arrays of IDs and URIs
+    const ids = availableNFTs[0];
+    const uris = availableNFTs[1];
+
+    // Create a message string to display in the alert
+    let message = "Available NFTs:\n";
+    for (let i = 0; i < ids.length; i++) {
+      message += `ID: ${ids[i]}, URI: ${uris[i]}\n`;
     }
-
-    console.log("Available NFTs:", availableNfts);
-    alert(`Available NFTs: ${availableNfts.join(", ")}`);
-    return availableNfts;
+    
+    alert(`${message}`);
+    
+    return availableNFTs;
   } catch (error) {
     console.error("Error getting available NFTs:", error);
   }
