@@ -199,11 +199,12 @@ function displayLoans(loans) {
     loanElement.style.justifyContent = "space-between";
     loanElement.style.alignItems = "center";
     loanElement.style.flexDirection = "column";
-    loanElement.style.boxShadow = "0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22)";
+    loanElement.style.boxShadow =
+      "0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22)";
     loanElement.style.padding = "20px";
     loanElement.style.margin = "20px";
     loanElement.style.borderRadius = "5%";
-    
+
     loanElement.innerHTML = `
       <p>Loan ID: ${index}</p>
       <p>Borrower: ${borrower}</p>
@@ -211,7 +212,11 @@ function displayLoans(loans) {
       <p>Deadline: ${new Date(Number(deadline) * 1000).toLocaleString()}</p>
       <p>Lender: ${lender}</p>
       <p>Repaid Amount: ${repaidAmount.toString()}</p>
-      ${isBasedNft ? `<p>NFT Contract: ${nftContract}</p><p>NFT ID: ${nftId.toString()}</p>` : ""}
+      ${
+        isBasedNft
+          ? `<p>NFT Contract: ${nftContract}</p><p>NFT ID: ${nftId.toString()}</p>`
+          : ""
+      }
     `;
     loanList.appendChild(loanElement);
   });
@@ -229,7 +234,9 @@ async function returnLoan(loanId, weiAmount) {
       throw new Error("Contract or user account not initialized.");
     }
 
-    await defi_contract.methods.returnLoan(loanId).send({ from: userAccount, value: weiAmount });
+    await defi_contract.methods
+      .returnLoan(loanId)
+      .send({ from: userAccount, value: weiAmount });
 
     // Hide the popup after successful return
     document.getElementById("return-loan-popup").style.display = "none";
@@ -242,23 +249,28 @@ async function returnLoan(loanId, weiAmount) {
 }
 
 // Add event listener for closing the popup
-document.getElementById("close-return-loan-popup").addEventListener("click", function() {
-  document.getElementById("return-loan-popup").style.display = "none";
-});
+document
+  .getElementById("close-return-loan-popup")
+  .addEventListener("click", function () {
+    document.getElementById("return-loan-popup").style.display = "none";
+  });
 
 // Add event listener for the "Return Loan" button to open the popup
-document.getElementById("return-loan-button").addEventListener("click", function() {
-  openReturnLoanPopup();
-});
+document
+  .getElementById("return-loan-button")
+  .addEventListener("click", function () {
+    openReturnLoanPopup();
+  });
 
 // Add event listener for form submission
-document.getElementById("return-loan-form").addEventListener("submit", async function(event) {
-  event.preventDefault(); // Prevent form from submitting the traditional way
-  const loanId = document.getElementById("loan-id-input").value;
-  const weiAmount = document.getElementById("wei-amount-input").value;
-  await returnLoan(loanId, weiAmount);
-});
-
+document
+  .getElementById("return-loan-form")
+  .addEventListener("submit", async function (event) {
+    event.preventDefault(); // Prevent form from submitting the traditional way
+    const loanId = document.getElementById("loan-id-input").value;
+    const weiAmount = document.getElementById("wei-amount-input").value;
+    await returnLoan(loanId, weiAmount);
+  });
 
 // Add event listener to fetch and display user loans
 document
@@ -353,13 +365,6 @@ async function loan(dexAmount, deadline) {
   const accounts = await web3.eth.getAccounts();
   await defi_contract.methods
     .loan(dexAmount, deadline)
-    .send({ from: accounts[0] });
-}
-
-async function returnLoan(loanId, ethAmount) {
-  const accounts = await web3.eth.getAccounts();
-  await defi_contract.methods
-    .returnLoan(loanId, ethAmount)
     .send({ from: accounts[0] });
 }
 
@@ -605,5 +610,4 @@ window.checkLoanStatus = checkLoanStatus;
 window.getAllTokenURIs = getAllTokenURIs;
 window.displayLoansWithStatusButtons = displayLoansWithStatusButtons;
 window.getRateEthToDex = getRateEthToDex;
-window.returnLoan = returnLoan;
 window.openReturnLoanPopup = openReturnLoanPopup;
