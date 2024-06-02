@@ -67,12 +67,12 @@ setInterval(fetchBalance, 1500);
 setInterval(async () => {
   if (opt) {
     try {
-      const loansCounter = await defi_contractABI.methods.getLoanCounter.call();
+      const loansCounter = await defi_contract.methods.getLoanCounter().call();
       for (let index = 0; index < loansCounter; index++) {
         try {
           await defi_contract.methods.checkLoan(index).call();
         } catch (error) {
-          console.error("Error checking loand: ", error);
+          console.error("Error checking loan: ", error);
         }
       }
       alert("Checked all loans!");
@@ -81,6 +81,26 @@ setInterval(async () => {
     }
   }
 }, 600000);
+
+async function totalAmountBorrowedAnNotPaidETH() {
+  try {
+    const loansCounter = await defi_contract.methods.getLoanCounter().call();
+    let borrowedTotalAmount = 0;
+    let notPaidTotalAmount = 0;
+    for (let index = 0; index < loansCounter; index++) {
+      try {
+        let result = await defi_contract.methods.checkLoan(index).call();
+        borrowedTotalAmount = borrowedTotalAmount + parseInt(result[0]);
+        notPaidTotalAmount = notPaidTotalAmount + parseInt(result[3]);
+      } catch (error) {}
+    }
+    alert(
+      `Total Amount borrowed: ${borrowedTotalAmount}\nTotal Amount not paid:: ${notPaidTotalAmount}`
+    );
+  } catch (error) {
+    console.error("Error checking loand: ", error);
+  }
+}
 
 async function fetchBalance() {
   let swapRateTest;
@@ -150,7 +170,6 @@ async function getUserLoans() {
     const userLoans = await defi_contract.methods
       .getUserLoans(userAccount)
       .call();
-    console.log("userLoans: ", userLoans);
     displayLoans(userLoans);
   } catch (error) {
     console.error("Error fetching user loans:", error);
@@ -641,3 +660,4 @@ window.getAllTokenURIs = getAllTokenURIs;
 window.getRateEthToDex = getRateEthToDex;
 window.openReturnLoanPopup = openReturnLoanPopup;
 window.getAvailableNfts = getAvailableNfts;
+window.totalAmountBorrowedAnNotPaidETH = totalAmountBorrowedAnNotPaidETH;
