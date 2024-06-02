@@ -20,7 +20,7 @@ let userAccount;
 let opt = false;
 let swapRate;
 
-const defi_contractAddress = "0x99110A1A2372eaE3d12A5694a92034743d1097c2";
+const defi_contractAddress = "0xFF6D49b1a4aECc1Fe6B3cc6De151Db08A111D394";
 const defi_contractABI = defi_abi;
 
 const nft_contractAddress = "0xd7Ca4e99F7C171B9ea2De80d3363c47009afaC5F";
