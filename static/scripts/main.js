@@ -20,7 +20,7 @@ let userAccount;
 let opt = false;
 let swapRate;
 
-const defi_contractAddress = "0x1640d8B21d6b307d90B8892Ad184884a4dF35C4a";
+const defi_contractAddress = "0x99110A1A2372eaE3d12A5694a92034743d1097c2";
 const defi_contractABI = defi_abi;
 
 const nft_contractAddress = "0xd7Ca4e99F7C171B9ea2De80d3363c47009afaC5F";
@@ -418,6 +418,65 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 });
 
+function openForm() {
+  document.getElementById("loanForm").style.display = "block";
+}
+
+function closeForm() {
+  document.getElementById("loanForm").style.display = "none";
+}
+
+document
+  .getElementById("loanForm")
+  .addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    const dexAmount = document.getElementById("dexAmount").value;
+    const duration = document.querySelector(
+      'input[name="duration"]:checked'
+    ).value;
+
+    const blockTimestamp = await defi_contract.methods
+      .getBlockTimestamp()
+      .call();
+    console.log("block timestamp: ", blockTimestamp);
+
+    // Convert duration to seconds
+    let LoanDuration = 0;
+    switch (duration) {
+      case "6h":
+        LoanDuration = parseInt(blockTimestamp) + 6 * 3600;
+        break;
+      case "12h":
+        LoanDuration = parseInt(blockTimestamp) + 12 * 3600;
+        break;
+      case "18h":
+        LoanDuration = parseInt(blockTimestamp) + 18 * 3600;
+        break;
+      case "24h":
+        LoanDuration = parseInt(blockTimestamp) + 24 * 3600;
+        break;
+      default:
+        console.error("Invalid duration");
+        return;
+    }
+
+    console.log("Loan Durantion;", LoanDuration);
+
+    // Call the loan function from the smart contract
+    const result = await defi_contract.methods
+      .loan(dexAmount, LoanDuration)
+      .send({ from: userAccount });
+
+    // Retrieve loan ID from the event logs
+    const loanId = result.events.LoanCreated.returnValues.loanId;
+
+    alert(`Loan created successfully! Loan ID: ${loanId}`);
+
+    closeForm();
+  });
+window.openForm = openForm;
+window.closeForm = closeForm;
 window.connectMetaMask = connectMetaMask;
 window.buyDex = buyDex;
 window.getDex = getDex;

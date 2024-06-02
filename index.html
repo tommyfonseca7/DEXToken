@@ -74,7 +74,7 @@
       <!-- LOAN SECTION -->
       <div class="loan-container">
         <h2>Loans:</h2>
-        <button id="loan-button" onclick="loan()">Loan</button>
+        <button id="loan-button" onclick="openForm()">Loan</button>
         <button id="return-loan-button" onclick="returnLoan()">
           Return Loan
         </button>
@@ -125,6 +125,26 @@
         <p id="dexrate"></p>
       </div>
     </div>
+
+    <div class="form-popup" id="loanForm">
+        <form class="form-container" id="loanForm">
+            <h1>Create Loan</h1>
+            <label for="dexAmount">DEX Amount:</label>
+            <input type="number" id="dexAmount" name="dexAmount" required><br>
+
+            <label for="duration">Loan Duration:</label><br>
+            <input type="radio" id="6h" name="duration" value="6h" required>
+            <label for="6h">6 hours</label><br>
+            <input type="radio" id="12h" name="duration" value="12h">
+            <label for="12h">12 hours</label><br>
+            <input type="radio" id="18h" name="duration" value="18h">
+            <label for="18h">18 hours</label><br>
+            <input type="radio" id="24h" name="duration" value="24h">
+            <label for="24h">24 hours</label><br>
+
+            <button type="submit" class="btn">Create Loan</button>
+            <button type="button" class="btn cancel" onclick="closeForm()">Close</button>
+        </form>
 
     <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
 
