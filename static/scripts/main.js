@@ -217,7 +217,7 @@ function displayLoans(loans) {
   });
 }
 
-// Function to open the popup and pre-fill the form (if needed)
+// Function to open the popup
 function openReturnLoanPopup() {
   document.getElementById("return-loan-popup").style.display = "block";
 }
@@ -227,6 +227,14 @@ async function returnLoan(loanId, weiAmount) {
   try {
     if (!defi_contract || !userAccount) {
       throw new Error("Contract or user account not initialized.");
+    }
+
+    // Ensure loanId and weiAmount are numbers
+    loanId = parseInt(loanId);
+    weiAmount = parseInt(weiAmount);
+
+    if (isNaN(loanId) || isNaN(weiAmount)) {
+      throw new Error("Invalid input values");
     }
 
     await defi_contract.methods.returnLoan(loanId).send({ from: userAccount, value: weiAmount });
@@ -258,6 +266,7 @@ document.getElementById("return-loan-form").addEventListener("submit", async fun
   const weiAmount = document.getElementById("wei-amount-input").value;
   await returnLoan(loanId, weiAmount);
 });
+
 
 
 // Add event listener to fetch and display user loans
@@ -605,5 +614,4 @@ window.checkLoanStatus = checkLoanStatus;
 window.getAllTokenURIs = getAllTokenURIs;
 window.displayLoansWithStatusButtons = displayLoansWithStatusButtons;
 window.getRateEthToDex = getRateEthToDex;
-window.returnLoan = returnLoan;
 window.openReturnLoanPopup = openReturnLoanPopup;
