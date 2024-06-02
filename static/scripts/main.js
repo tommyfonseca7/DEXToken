@@ -196,7 +196,7 @@ function displayLoans(loans) {
     const loanElement = document.createElement("div");
     loanElement.classList.add("loan-item");
     loanElement.style.display = "flex";
-    loanElement.style.justifyContent = "flex";
+    loanElement.style.justifyContent = "center";
     loanElement.style.alignItems = "center";
     loanElement.style.flexDirection = "column";
     loanElement.style.boxShadow =
@@ -204,18 +204,20 @@ function displayLoans(loans) {
     loanElement.style.padding = "20px";
     loanElement.style.margin = "20px";
     loanElement.style.borderRadius = "5%";
-    loanElement.style.fontSize = "20px";
+    loanElement.style.fontSize = "16px"; // Reduced font size for smaller spacing
 
     loanElement.innerHTML = `
-      <p>Loan ID: ${index}</p>
-      <p>Borrower: ${borrower}</p>
-      <p>Amount: ${amount.toString()}</p>
-      <p>Deadline: ${new Date(Number(deadline) * 1000).toLocaleString()}</p>
-      <p>Lender: ${lender}</p>
-      <p>Repaid Amount: ${repaidAmount.toString()}</p>
+      <p style="margin: 4px 0;">Loan ID: ${index}</p>
+      <p style="margin: 4px 0;">Borrower: ${borrower}</p>
+      <p style="margin: 4px 0;">Amount: ${amount.toString()}</p>
+      <p style="margin: 4px 0;">Deadline: ${new Date(
+        Number(deadline) * 1000
+      ).toLocaleString()}</p>
+      <p style="margin: 4px 0;">Lender: ${lender}</p>
+      <p style="margin: 4px 0;">Repaid Amount: ${repaidAmount.toString()}</p>
       ${
         isBasedNft
-          ? `<p>NFT Contract: ${nftContract}</p><p>NFT ID: ${nftId.toString()}</p>`
+          ? `<p style="margin: 4px 0;">NFT Contract: ${nftContract}</p><p style="margin: 4px 0;">NFT ID: ${nftId.toString()}</p>`
           : ""
       }
     `;

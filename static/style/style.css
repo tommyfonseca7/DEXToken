@@ -304,7 +304,8 @@ margin-bottom: 10px;
 
 /* Add styles to the form container */
 .form-container {
-  max-width: 300px;
+  max-width: 400px;
+  max-height: 700px;
   padding: 20px;
   background-color: white;
 }
@@ -344,4 +345,13 @@ margin-bottom: 10px;
 /* Add some hover effects to buttons */
 .form-container .btn:hover, .open-button:hover {
   opacity: 1;
+}
+
+#loan-list {
+  max-height: 700px; /* Adjust the height as needed */
+  overflow-y: auto;
+}
+
+.loan-item p {
+  margin: 4px 0; /* Reduce space between paragraphs */
 }

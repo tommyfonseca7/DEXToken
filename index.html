@@ -100,7 +100,6 @@
       </div>
 
       <div id="loan-list" style="display: none">
-        <h2>User loans:</h2>
       </div>
 
       <!-- NFT SECTION -->
@@ -157,15 +156,40 @@
             <label for="dexAmount">DEX Amount:</label>
             <input type="number" id="dexAmount" name="dexAmount" required><br>
 
-            <label for="duration">Loan Duration:</label><br>
-            <input type="radio" id="6h" name="duration" value="6h" required>
-            <label for="6h">6 hours</label><br>
-            <input type="radio" id="12h" name="duration" value="12h">
-            <label for="12h">12 hours</label><br>
-            <input type="radio" id="18h" name="duration" value="18h">
-            <label for="18h">18 hours</label><br>
-            <input type="radio" id="24h" name="duration" value="24h">
-            <label for="24h">24 hours</label><br>
+            <table>
+                <tr>
+                  <th>Loan Duration</th>
+                </tr>
+                <tr>
+                  <td>
+                    <label for="6h">6 hours</label>
+                    <input type="radio" id="6h" name="duration" value="6h" required>
+
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label for="12h">12 hours</label>
+                    <input type="radio" id="12h" name="duration" value="12h">
+
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label for="18h">18 hours</label>
+                    <input type="radio" id="18h" name="duration" value="18h">
+
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <label for="24h">24 hours</label>
+                    <input type="radio" id="24h" name="duration" value="24h">
+
+                  </td>
+                </tr>
+              </table>
+              
 
             <button type="submit" class="btn">Create Loan</button>
             <button type="button" class="btn cancel" onclick="closeForm()">Close</button>
