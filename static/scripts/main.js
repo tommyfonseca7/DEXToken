@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
-let balanceInEthACC;
+let userBalanceInDex;
 let ethTotalBalance;
 let defi_contract;
 let nft_contract;
@@ -20,7 +20,7 @@ let userAccount;
 let opt = false;
 let swapRate;
 
-const defi_contractAddress = "0x8bE8707d47fDF0b155C531E2a89c07116e7861Dd";
+const defi_contractAddress = "0x040FAF4F28528b6188534B85AC8daEB0d4FD7ff8";
 const defi_contractABI = defi_abi;
 
 const nft_contractAddress = "0xd7Ca4e99F7C171B9ea2De80d3363c47009afaC5F";
@@ -72,18 +72,15 @@ setInterval(async () => {
       console.error("Error getting DEX Swap Rate:", error);
       return; // Exit the function if there's an error
     }
-
     getDex();
     getEthTotalBalance;
     document.getElementById("wallet-balance-value").innerText =
-      await convertWEItoDEX(
-        balanceInEthACC.toString().slice(0, -1),
-        swapRateTest
-      );
-    document.getElementById("wei-balance-value").innerText =
-      convertWEItoETH(balanceInEthACC);
+      userBalanceInDex;
+    let userBalanceInWEI = userBalanceInDex * swapRateTest;
+
+    document.getElementById("wei-balance-value").innerText = userBalanceInWEI;
   }
-}, 2500);
+}, 1500);
 
 // Add event listener to the connect button
 document
@@ -92,38 +89,38 @@ document
 
 // Update the wallet address and balance values
 document.getElementById("wallet-address").innerText = userAccount;
-document.getElementById("wallet-balance-value").innerText = balanceInEthACC;
+document.getElementById("wallet-balance-value").innerText = userBalanceInDex;
 
-async function fetchBalance() {
-  try {
-    if (!defi_contract || !userAccount) {
-      throw new Error("Contract or user account not initialized.");
-    }
+// async function fetchBalance() {
+//   try {
+//     if (!defi_contract || !userAccount) {
+//       throw new Error("Contract or user account not initialized.");
+//     }
 
-    console.log("Fetching balance for account:", userAccount);
+//     console.log("Fetching balance for account:", userAccount);
 
-    // Fetch the DEX token balance
-    const userBalance = await defi_contract.methods
-      .balanceOf(userAccount)
-      .call();
-    console.log("User balance in Wei:", userBalance);
-    const balanceInEth = web3.utils.fromWei(userBalance, "ether");
-    balanceInEthACC = balanceInEth;
-    console.log("User balance in DEX tokens:", balanceInEth);
+//     // Fetch the DEX token balance
+//     const userBalance = await defi_contract.methods
+//       .balanceOf(userAccount)
+//       .call();
+//     console.log("User balance in Wei:", userBalance);
+//     const balanceInEth = web3.utils.fromWei(userBalance, "ether");
+//     userBalanceInDex = balanceInEth;
+//     console.log("User balance in DEX tokens:", balanceInEth);
 
-    document.getElementById(
-      "balance"
-    ).innerText = `Balance: ${balanceInEth} DEX`;
-  } catch (error) {
-    console.error("Error fetching balance", error);
-    if (error.message.includes("Returned values aren't valid")) {
-      console.error(
-        "Possible causes: incorrect ABI, wrong contract address, or a non-synced node."
-      );
-    }
-    document.getElementById("balance").innerText = "Error fetching balance";
-  }
-}
+//     document.getElementById(
+//       "balance"
+//     ).innerText = `Balance: ${balanceInEth} DEX`;
+//   } catch (error) {
+//     console.error("Error fetching balance", error);
+//     if (error.message.includes("Returned values aren't valid")) {
+//       console.error(
+//         "Possible causes: incorrect ABI, wrong contract address, or a non-synced node."
+//       );
+//     }
+//     document.getElementById("balance").innerText = "Error fetching balance";
+//   }
+// }
 
 async function getDexSwapRate() {
   try {
@@ -197,7 +194,9 @@ async function checkLoanStatus(loanId) {
 
 async function buyDex() {
   try {
-    const ethAmount = prompt("Enter the amount of DEX tokens to purchase:");
+    const ethAmount = prompt(
+      "Enter the amount of DEX tokens to purchase in ETH:"
+    );
     if (!ethAmount || isNaN(ethAmount) || ethAmount <= 0) {
       throw new Error("Invalid DEX amount");
     }
@@ -211,7 +210,7 @@ async function buyDex() {
         value: ethAmountInWei,
       });
       alert("DEX purchased successfully");
-      fetchBalance(); // Refresh balance after buying DEX
+      //TODO FUNCAO PARA ATUALIZAR VALORES NA CARTEIRA AUTOMATICAMENTE APOS COMPRAR
     } catch (error) {
       console.error("Error buying DEX", error);
     }
@@ -221,42 +220,23 @@ async function buyDex() {
 }
 
 async function getDex() {
-  const accounts = await web3.eth.getAccounts();
   const dexBalance = await defi_contract.methods
     .getDexBalance()
-    .call({ from: accounts[0] });
-  balanceInEthACC = dexBalance;
+    .call({ from: userAccount });
+  userBalanceInDex = dexBalance;
 }
 
 async function sellDex() {
   try {
-    const ethAmount = prompt("Enter the amount of ETH you want to sell:");
-    if (!ethAmount || isNaN(ethAmount) || ethAmount <= 0) {
-      throw new Error("Invalid ETH amount");
+    const DEXAmount = prompt(
+      "Enter the amount of DEX tokens you want to sell:"
+    );
+    if (!DEXAmount || isNaN(DEXAmount) || DEXAmount <= 0) {
+      throw new Error("Invalid DEX amount");
     }
-
-    // const ethAmountInWei = web3.utils.toWei(ethAmount, "ether");
-
-    // Retrieve the current swap rate from the contract
-    const swapRate = await defi_contract.methods.getDexSwapRate().call();
-    console.log(`Retrieved Swap Rate: ${swapRate}`);
-
-    // Calculate the required DEX amount based on the swap rate
-    // const dexAmount = new web3.utils.BN(ethAmountInWei).div(
-    //   new web3.utils.BN(swapRate)
-    // );
-
-    const dexAmount = convertEthtoWEI(ethAmount);
-    const dexAmountInWei = dexAmount.toString();
-
-    const accounts = await web3.eth.getAccounts();
-
-    // Send the DEX tokens to the contract to receive ETH
-    await defi_contract.methods
-      .sellDex(dexAmountInWei)
-      .send({ from: accounts[0] });
+    await defi_contract.methods.sellDex(DEXAmount).send({ from: userAccount });
     alert("DEX sold successfully");
-    // fetchBalance(); // Refresh balance after selling DEX
+    //TODO FUNCAO PARA ATUALIZAR VALORES NA CARTEIRA AUTOMATICAMENTE APOS VENDER
   } catch (error) {
     console.error("Error selling DEX tokens:", error);
   }
@@ -275,22 +255,6 @@ async function returnLoan(loanId, ethAmount) {
     .returnLoan(loanId, ethAmount)
     .send({ from: accounts[0] });
 }
-
-// async function getEthTotalBalance() {
-//   try {
-//     if (!defi_contract || !userAccount) {
-//       throw new Error("Contract or user account not initialized.");
-//     }
-
-//     const accounts = await web3.eth.getAccounts();
-//     const balance = await defi_contract.methods
-//       .getBalance()
-//       .call({ from: userAccount[accounts] });
-//     ethTotalBalance = balance;
-//   } catch (error) {
-//     console.error("Error getting total ETH balance:", error);
-//   }
-// }
 
 async function getEthTotalBalance() {
   try {
@@ -440,23 +404,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   };
 });
-
-function convertWEItoDEX(wei, swapRate) {
-  // Ensure wei is a BigInt and swapRate is a Number
-  let dexValue = Number(wei) / Number(swapRate);
-  return dexValue;
-}
-
-function convertWEItoETH(wei) {
-  // Ensure wei is a BigInt
-  let dexValue = Number(wei) / 1000000000000000000;
-  return dexValue;
-}
-
-function convertEthtoWEI(eth) {
-  let weiValue = Number(eth) * 1000000000000000000;
-  return weiValue;
-}
 
 window.connectMetaMask = connectMetaMask;
 window.buyDex = buyDex;

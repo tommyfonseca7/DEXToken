@@ -24,6 +24,7 @@ contract DecentralizedFinance is ERC20 {
 
     mapping(uint256 => Loan) public loans;
 
+    event Log(uint256);
     event LoanCreated(
         address indexed borrower,
         uint256 amount,
@@ -32,38 +33,57 @@ contract DecentralizedFinance is ERC20 {
     event LoanRepaid(address indexed borrower, uint256 amount, uint256 loanId);
 
     constructor() payable ERC20("DEX", "DEX") {
-        require(msg.value == 1 ether, "Initial funding must be 1 ETH");
+        require(
+            msg.value == 100000000000000000 wei,
+            "Initial funding must be 1 ETH"
+        );
         owner = msg.sender;
         maxLoanDuration = 30 days;
-        dexSwapRate = 1000; // Example initial rate
-        balance = 0;
+        dexSwapRate = 1000;
+        balance = (msg.value * 10 ** 18);
         loanCounter = 0;
-        _mint(address(this), 10 ** 22); // Mint 10,000 DEX tokens to the contract
+        _mint(address(this), 10 ** 18);
     }
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Not the contract owner");
         _;
     }
-
+    // works
     function getDexSwapRate() public view returns (uint256) {
         return dexSwapRate;
     }
 
+    // function sellDex(uint256 dexAmount) external{
+    //     address user = msg.sender;
+    //     uint256 oldValue = balanceOf(contrato);
+    //     emit oldBalance(oldValue);
+    //     require(balanceOf(user) >= dexAmount, "Not enough DEX available");
+    //     uint256 AmountInWei = dexAmount * dexSwapRate;
+    //     uint256 ethAmount = AmountInWei / 10**18;
+    //     require(contrato.balance >= ethAmount, "Not enough ETH available");
+    //     _transfer(user,contrato, dexAmount);
+    //     payable(user).transfer(AmountInWei);
+    //     emit usu(user, contrato);
+    //     adjustDexSwapRate(oldValue);
+
+    // }
+
+    // works
     function buyDex() external payable {
         require(msg.value > 0, "You need to send some ETH");
-        uint256 dexAmount = msg.value * dexSwapRate;
+        uint256 dexAmount = (msg.value / dexSwapRate);
         _transfer(address(this), msg.sender, dexAmount);
-        balance += msg.value;
+        balance += dexAmount;
     }
-
+    // works
     function sellDex(uint256 dexAmount) external {
         uint256 ethAmount = dexAmount / dexSwapRate;
         require(
             address(this).balance >= ethAmount,
             "Not enough ETH in contract"
         );
-        _transfer(msg.sender, address(this), dexAmount);
+        _transfer(msg.sender, address(this), (dexAmount));
         payable(msg.sender).transfer(ethAmount);
         balance -= ethAmount;
     }
@@ -124,16 +144,17 @@ contract DecentralizedFinance is ERC20 {
         emit LoanRepaid(msg.sender, weiAmount, loanId);
     }
 
-    function getBalance() public view returns (uint256) {
-        return address(this).balance;
+    // works
+    function getBalance() public view onlyOwner returns (uint256) {
+        return (address(this).balance * dexSwapRate); //WEI
     }
 
     function getDexBalance() external view returns (uint256) {
-        return balanceOf(address(this));
+        return (balanceOf(msg.sender)); //DEX
     }
 
     function setDexSwapRate(uint256 rate) external onlyOwner {
-        dexSwapRate = rate;
+        dexSwapRate = rate; //WEI
     }
 
     function makeLoanRequestByNft(
@@ -217,47 +238,13 @@ contract DecentralizedFinance is ERC20 {
         }
     }
 
-    struct LoanInfo {
-        uint256 deadline;
-        uint256 amount;
-        address lender;
-        bool isBasedNft;
-        address nftContract;
-        uint256 nftId;
-        uint256 repaidAmount;
-    }
+    function getAllLoans() public view returns (Loan[] memory) {
+        Loan[] memory allLoans = new Loan[](loanCounter);
 
-    function getBorrowerLoans() external view returns (LoanInfo[] memory) {
-        uint256 borrowerLoanCount = 0;
-
-        // Count the number of loans belonging to the borrower
         for (uint256 i = 0; i < loanCounter; i++) {
-            if (loans[i].borrower == msg.sender) {
-                borrowerLoanCount++;
-            }
+            allLoans[i] = loans[i];
         }
 
-        // Initialize array to store loan information
-        LoanInfo[] memory borrowerLoans = new LoanInfo[](borrowerLoanCount);
-
-        // Populate borrowerLoans array with loans belonging to the borrower
-        uint256 index = 0;
-        for (uint256 j = 0; j < loanCounter; j++) {
-            if (loans[j].borrower == msg.sender) {
-                Loan storage loan3 = loans[j];
-                borrowerLoans[index] = LoanInfo(
-                    loan3.deadline,
-                    loan3.amount,
-                    loan3.lender,
-                    loan3.isBasedNft,
-                    address(loan3.nftContract),
-                    loan3.nftId,
-                    loan3.repaidAmount
-                );
-                index++;
-            }
-        }
-
-        return borrowerLoans;
+        return allLoans;
     }
 }

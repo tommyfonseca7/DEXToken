@@ -25,44 +25,6 @@ export const defi_abi = [
   },
   {
     inputs: [],
-    name: "buyDex",
-    outputs: [],
-    stateMutability: "payable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "contract IERC721",
-        name: "nftContract",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "nftId",
-        type: "uint256",
-      },
-    ],
-    name: "cancelLoanRequestByNft",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "loanId",
-        type: "uint256",
-      },
-    ],
-    name: "checkLoan",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
     stateMutability: "payable",
     type: "constructor",
   },
@@ -178,6 +140,44 @@ export const defi_abi = [
     type: "event",
   },
   {
+    inputs: [],
+    name: "buyDex",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "contract IERC721",
+        name: "nftContract",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "nftId",
+        type: "uint256",
+      },
+    ],
+    name: "cancelLoanRequestByNft",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "loanId",
+        type: "uint256",
+      },
+    ],
+    name: "checkLoan",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "uint256",
@@ -261,6 +261,19 @@ export const defi_abi = [
       },
     ],
     name: "LoanRepaid",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    name: "Log",
     type: "event",
   },
   {
@@ -497,20 +510,7 @@ export const defi_abi = [
   },
   {
     inputs: [],
-    name: "getBalance",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "getBorrowerLoans",
+    name: "getAllLoans",
     outputs: [
       {
         components: [
@@ -530,12 +530,17 @@ export const defi_abi = [
             type: "address",
           },
           {
+            internalType: "address",
+            name: "borrower",
+            type: "address",
+          },
+          {
             internalType: "bool",
             name: "isBasedNft",
             type: "bool",
           },
           {
-            internalType: "address",
+            internalType: "contract IERC721",
             name: "nftContract",
             type: "address",
           },
@@ -550,9 +555,22 @@ export const defi_abi = [
             type: "uint256",
           },
         ],
-        internalType: "struct DecentralizedFinance.LoanInfo[]",
+        internalType: "struct DecentralizedFinance.Loan[]",
         name: "",
         type: "tuple[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "getBalance",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
       },
     ],
     stateMutability: "view",
