@@ -20,7 +20,7 @@ let userAccount;
 let opt = false;
 let swapRate;
 
-const defi_contractAddress = "0xf46D6Db5015448E097cF2a57C6944600CbBdC846";
+const defi_contractAddress = "0x82Dfa413C6472EA7f3eCfa33320E68c06c2a33fB";
 const defi_contractABI = defi_abi;
 
 const nft_contractAddress = "0xd7Ca4e99F7C171B9ea2De80d3363c47009afaC5F";
@@ -186,41 +186,6 @@ function displayLoans(loans) {
 }
 
 //TODO
-async function returnLoan(loanId, weiAmount) {
-  try {
-    if (!defi_contract || !userAccount) {
-      throw new Error("Contract or user account not initialized.");
-    }
-
-    // Ensure loanId is an integer and weiAmount is a string representing a numeric value in Wei
-    loanId = parseInt(loanId);
-    weiAmount = weiAmount;
-
-    if (isNaN(loanId) || isNaN(parseInt(weiAmount))) {
-      throw new Error("Invalid input values");
-    }
-
-    // Call the contract method
-    const result = await defi_contract.methods.returnLoan(loanId).send({
-      from: userAccount,
-      value: weiAmount,
-    });
-
-    const loanIdRetrieved = result.events.LoanRepaid.returnValues.loanId;
-    const amount = result.events.LoanRepaid.returnValues.amount;
-    alert(`Loan ${loanIdRetrieved} repaid with amount ${amount}`);
-
-    // Hide the popup after successful return
-    document.getElementById("return-loan-popup").style.display = "none";
-
-    // Refresh the loan list
-    await getUserLoans();
-  } catch (error) {
-    console.error("Error returning loan:", error);
-  }
-}
-
-//TODO
 async function openReturnLoanPopup() {
   document.getElementById("return-loan-popup").style.display = "block";
 }
@@ -231,14 +196,58 @@ document
   .addEventListener("submit", async function (event) {
     event.preventDefault();
 
-    const loanId = document.getElementById("loan-id-input").value;
-    const weiAmount = document.getElementById("wei-amount-input").value;
-    const result = await defi_contract.methods
-      .returnLoan(loanId)
-      .send(weiAmount);
-    const loanIdRretriebed = result.events.LoanRepaid.returnValues.loanId;
-    const amount = result.events.LoanRepaid.returnValues.amount;
-    alert(`Loan ${loanIdRretriebed} repaid this ${amount}`);
+    try {
+      const loanIdInput = document.getElementById("loan-id-input").value;
+      const weiAmountInput = document.getElementById("wei-amount-input").value;
+
+      console.log("loan ID: ", typeof loanIdInput);
+      console.log("weiAmount: ", typeof weiAmountInput);
+
+      // Validate loanId and weiAmount
+      if (!loanIdInput || isNaN(loanIdInput) || parseInt(loanIdInput, 10) < 0) {
+        console.error("Invalid loan ID");
+        return;
+      }
+
+      if (
+        !weiAmountInput ||
+        isNaN(weiAmountInput) ||
+        parseFloat(weiAmountInput) <= 0
+      ) {
+        console.error("Invalid wei amount");
+        return;
+      }
+
+      const loanId = parseInt(loanIdInput, 10);
+      const weiAmount = web3.utils.toWei(weiAmountInput, "wei"); // Convert to Wei
+
+      console.log("Converted loan ID: ", loanId);
+      console.log("Converted weiAmount: ", weiAmount);
+
+      try {
+        await defi_contract.methods
+          .returnLoan(loanId, weiAmount)
+          .send({ from: userAccount })
+          .on("transactionHash", function (hash) {
+            console.log("Transaction hash: ", hash);
+          })
+          .on("receipt", function (receipt) {
+            console.log("Receipt: ", receipt);
+          })
+          .on("confirmation", function (confirmationNumber, receipt) {
+            console.log("Confirmation: ", confirmationNumber, receipt);
+          })
+          .on("error", function (error) {
+            console.error("Error in transaction: ", error.message || error);
+          });
+        console.log("Loan repaid successfully");
+      } catch (error) {
+        console.error("Error repaying loan:", error.message || error);
+        console.dir(error); // Log full error object for more details
+      }
+    } catch (error) {
+      console.error("Error processing form:", error.message || error);
+    }
   });
 
 // Add event listener for closing the popup TODO
@@ -564,7 +573,6 @@ window.buyDex = buyDex;
 window.getDex = getDex;
 window.sellDex = sellDex;
 window.loan = loan;
-window.returnLoan = returnLoan;
 window.getEthTotalBalance = getEthTotalBalance;
 window.setRateEthToDex = setRateEthToDex;
 window.getRateEthToDex = getRateEthToDex;

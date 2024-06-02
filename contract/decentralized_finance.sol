@@ -28,7 +28,8 @@ contract DecentralizedFinance is ERC20 {
     event LoanCreated(
         address indexed borrower,
         uint256 amount,
-        uint256 deadline
+        uint256 deadline,
+        uint256 loanId
     );
     event LoanRepaid(address indexed borrower, uint256 amount, uint256 loanId);
 
@@ -49,6 +50,27 @@ contract DecentralizedFinance is ERC20 {
         require(msg.sender == owner, "Not the contract owner");
         _;
     }
+
+    function getUserLoans(address user) public view returns (Loan[] memory) {
+        uint256 count = 0;
+        for (uint256 i = 0; i < loanCounter; i++) {
+            if (loans[i].borrower == user) {
+                count++;
+            }
+        }
+
+        Loan[] memory userLoans = new Loan[](count);
+        uint256 index = 0;
+        for (uint256 i = 0; i < loanCounter; i++) {
+            if (loans[i].borrower == user) {
+                userLoans[index] = loans[i];
+                index++;
+            }
+        }
+
+        return userLoans;
+    }
+
     // works
     function calculateNewRate() internal {
         uint256 initialWeiBalance = 100000000000000000;
@@ -86,29 +108,25 @@ contract DecentralizedFinance is ERC20 {
         calculateNewRate();
     }
 
-    function futureDeadline() public view returns (uint256) {
-        return block.timestamp + 3600; // Example deadline set to 1 hour in the future
+    function getBlockTimestamp() external view returns (uint256) {
+        return block.timestamp;
     }
 
     function loan(uint256 dexAmount, uint256 deadline) external {
-        require(
-            deadline + block.timestamp > block.timestamp,
-            "Deadline must be in the future"
-        ); // Ensure deadline is in the future
+        require(deadline > block.timestamp, "Deadline must be in the future");
         require(
             deadline <= block.timestamp + maxLoanDuration,
             "Deadline exceeds max duration"
-        ); // Ensure deadline is within max duration
+        );
         require(
             balanceOf(address(this)) >= dexAmount,
             "Not enough DEX balance in contract"
-        ); // Ensure contract has enough tokens
+        );
 
-        uint256 initialEthToBeLoaned = dexAmount * dexSwapRate; // Calculate initial ETH amount based on dexAmount and swap rate
-        uint256 elapsedTime = deadline - block.timestamp; // Calculate remaining time until deadline
+        uint256 initialEthToBeLoaned = dexAmount * dexSwapRate;
+        uint256 elapsedTime = deadline - block.timestamp;
         uint256 value;
 
-        // Determine the value to be loaned based on the remaining time
         if (elapsedTime >= (maxLoanDuration * 3) / 4) {
             value = (initialEthToBeLoaned * 75) / 100;
         } else if (elapsedTime >= maxLoanDuration / 2) {
@@ -119,17 +137,14 @@ contract DecentralizedFinance is ERC20 {
             value = initialEthToBeLoaned;
         }
 
-        // Ensure the contract has enough ETH balance to transfer
         require(
             address(this).balance >= value,
             "Not enough ETH balance in contract"
         );
 
-        // Transfer tokens and ETH to the borrower
-        _transfer(address(this), msg.sender, dexAmount);
+        _transfer(msg.sender, address(this), dexAmount);
         payable(msg.sender).transfer(value);
 
-        // Record the loan details
         loans[loanCounter] = Loan(
             deadline,
             value,
@@ -140,11 +155,11 @@ contract DecentralizedFinance is ERC20 {
             0,
             0
         );
-        emit LoanCreated(msg.sender, value, deadline);
+        emit LoanCreated(msg.sender, value, deadline, loanCounter);
         loanCounter++;
     }
 
-    function returnLoan(uint256 loanId, uint256 weiAmount) external {
+    function returnLoan(uint256 loanId, uint256 weiAmount) external payable {
         Loan storage loan1 = loans[loanId];
         require(
             loan1.borrower == msg.sender,
@@ -161,6 +176,8 @@ contract DecentralizedFinance is ERC20 {
         loan1.repaidAmount += weiAmount;
         balance += weiAmount;
 
+        uint256 dexAmount = (weiAmount * (10 ** 18)) / dexSwapRate; // Calculate proportional DEX amount
+
         if (loan1.repaidAmount == loan1.amount) {
             if (loan1.isBasedNft) {
                 IERC721(loan1.nftContract).transferFrom(
@@ -168,9 +185,9 @@ contract DecentralizedFinance is ERC20 {
                     loan1.borrower,
                     loan1.nftId
                 );
-            } else {
-                _transfer(address(this), loan1.borrower, loan1.amount);
             }
+        } else {
+            _transfer(address(this), loan1.borrower, dexAmount);
         }
 
         emit LoanRepaid(msg.sender, weiAmount, loanId);
@@ -215,7 +232,7 @@ contract DecentralizedFinance is ERC20 {
             nftId,
             0
         );
-        emit LoanCreated(msg.sender, loanAmount, deadline);
+        // emit LoanCreated(msg.sender, loanAmount, deadline);
         loanCounter++;
     }
 
@@ -248,7 +265,7 @@ contract DecentralizedFinance is ERC20 {
                 _transfer(msg.sender, address(this), loan2.amount);
                 payable(loan2.borrower).transfer(loan2.amount);
 
-                emit LoanCreated(loan2.borrower, loan2.amount, loan2.deadline);
+                // emit LoanCreated(loan2.borrower, loan2.amount, loan2.deadline);
 
                 break;
             }
