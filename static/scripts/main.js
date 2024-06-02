@@ -159,7 +159,7 @@ function displayLoans(loans) {
     const loanElement = document.createElement("div");
     loanElement.classList.add("loan-item");
     loanElement.style.display = "flex";
-    loanElement.style.justifyContent = "space-between";
+    loanElement.style.justifyContent = "flex";
     loanElement.style.alignItems = "center";
     loanElement.style.flexDirection = "column";
     loanElement.style.boxShadow =
@@ -167,6 +167,7 @@ function displayLoans(loans) {
     loanElement.style.padding = "20px";
     loanElement.style.margin = "20px";
     loanElement.style.borderRadius = "5%";
+    loanElement.style.fontSize = "20px";
 
     loanElement.innerHTML = `
       <p>Loan ID: ${index}</p>
@@ -185,12 +186,10 @@ function displayLoans(loans) {
   });
 }
 
-//TODO
 async function openReturnLoanPopup() {
   document.getElementById("return-loan-popup").style.display = "block";
 }
 
-//TODO
 document
   .getElementById("return-loan-form")
   .addEventListener("submit", async function (event) {
@@ -250,14 +249,14 @@ document
     }
   });
 
-// Add event listener for closing the popup TODO
+// Add event listener for closing the popup
 document
   .getElementById("close-return-loan-popup")
   .addEventListener("click", function () {
     document.getElementById("return-loan-popup").style.display = "none";
   });
 
-// Add event listener for the "Return Loan" button to open the popup TODO
+// Add event listener for the "Return Loan" button to open the popup
 document
   .getElementById("return-loan-button")
   .addEventListener("click", function () {

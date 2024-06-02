@@ -32,6 +32,12 @@ contract DecentralizedFinance is ERC20 {
         uint256 loanId
     );
     event LoanRepaid(address indexed borrower, uint256 amount, uint256 loanId);
+    event LoanChecked(
+        uint256 amount,
+        uint256 deadline,
+        bool isBasedNft,
+        uint256 loanId
+    );
 
     constructor() payable ERC20("DEX", "DEX") {
         require(
@@ -272,8 +278,12 @@ contract DecentralizedFinance is ERC20 {
         }
     }
 
-    function checkLoan(uint256 loanId) external {
+    function checkLoan(uint256 loanId) external onlyOwner {
         Loan storage checkedLoan = loans[loanId];
+        uint256 amount = checkedLoan.amount;
+        uint256 deadline = checkedLoan.deadline;
+        bool isBasedNft = checkedLoan.isBasedNft;
+
         if (block.timestamp > checkedLoan.deadline && checkedLoan.amount > 0) {
             if (checkedLoan.isBasedNft) {
                 checkedLoan.nftContract.transferFrom(
@@ -290,6 +300,8 @@ contract DecentralizedFinance is ERC20 {
             }
             delete loans[loanId];
         }
+
+        emit LoanChecked(amount, deadline, isBasedNft, loanId);
     }
 
     function getAllLoans() public view returns (Loan[] memory) {
