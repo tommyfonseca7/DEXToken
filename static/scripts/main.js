@@ -20,10 +20,10 @@ let userAccount;
 let opt = false;
 let swapRate;
 
-const defi_contractAddress = "0x899321Ad2236E83094A5aD0fF1428eAb498f9e4A";
+const defi_contractAddress = "0xB33a26a9aF83EC7382933Ab445e26E4429352a55";
 const defi_contractABI = defi_abi;
 
-const nft_contractAddress = "0x982c381aaa90a1A4051c71158508081Ee30845c0";
+const nft_contractAddress = "0x0c6e24319281c54de5f0C2102E8A7e38CaA4c78C";
 const nft_contractABI = nft_abi;
 
 window.connectMetaMask = async function () {
@@ -63,6 +63,24 @@ window.connectMetaMask = async function () {
 };
 
 setInterval(fetchBalance, 1500);
+
+setInterval(async () => {
+  if (opt) {
+    try {
+      const loansCounter = await defi_contractABI.methods.getLoanCounter.call();
+      for (let index = 0; index < loansCounter; index++) {
+        try {
+          await defi_contract.methods.checkLoan(index).call();
+        } catch (error) {
+          console.error("Error checking loand: ", error);
+        }
+      }
+      alert("Checked all loans!");
+    } catch (error) {
+      console.error("Error checking Loans try again", error);
+    }
+  }
+}, 600000);
 
 async function fetchBalance() {
   let swapRateTest;
