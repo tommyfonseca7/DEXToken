@@ -22,6 +22,30 @@ How to run the project
    http://127.0.0.1:5500/index.html
    ```
 
+Connecting Ganache with the Project (Optional):
+
+1. Install Dependencies:
+
+   Make sure you have Node.js and npm installed. Run the following command to install project dependencies:
+
+   ```bash
+   npm install ganache
+   ```
+
+2. Execute the ganache:
+
+   ```bash
+   ganache
+   ```
+3. Connect with Metamask and Remix:
+
+   - Metamask:
+      - Create new local dev network
+      - Connect the account provided with the private keys of ganache
+
+   - Remix:
+      - Change Provider environment to Dev - Ganache Provider
+
 DEX to Wei Exchange Rate Adjustment Rule
 The DEX to Wei exchange rate is automatically adjusted based on the following rules:
 
