@@ -20,7 +20,7 @@ let userAccount;
 let opt = false;
 let swapRate;
 
-const defi_contractAddress = "0x762E238C3030cF8CbD7d59BDE9AcAe305a0df85e";
+const defi_contractAddress = "0xAD9cc61C2DFffC595c790282Fd3C18A166AF33ca";
 const defi_contractABI = defi_abi;
 
 const nft_contractAddress = "0x3aC5FF5a0DcAF406C84F2ed27e89E12616e85BA1";
@@ -470,13 +470,57 @@ async function getTotalBorrowedAndNotPaidBackEth() {
   }
 }
 
-// TODO
-async function makeLoanRequestByNft(nftContract, nftId, loanAmount, deadline) {
-  const accounts = await web3.eth.getAccounts();
-  await defi_contract.methods
-    .makeLoanRequestByNft(nftContract, nftId, loanAmount, deadline)
-    .send({ from: accounts[0] });
+// Function to open the NFT loan popup
+function openNftLoanForm() {
+  document.getElementById('popupnft').style.display = 'block';
 }
+
+// Function to close the NFT loan popup
+function closeNftLoanForm() {
+  document.getElementById('popupnft').style.display = 'none';
+}
+
+// Add event listeners for the popup close button and form submission
+document.getElementById('close-popupnft').addEventListener('click', closeNftLoanForm);
+document.getElementById('loan-nft-form').addEventListener('submit', async function(event) {
+  event.preventDefault();
+
+  let deadline = document.getElementById("deadline").value;
+  // Create a Date object from the deadline value
+  let deadlineDate = new Date(deadline);
+  // Get the timestamp from the Date object
+  let deadlineTimestamp = Math.floor(deadlineDate.getTime() / 1000); // Convert to seconds
+  let loanAmount = document.getElementById("loanAmount").value;
+  let nftId = document.getElementById("nftid").value;
+
+  try {
+    const accounts = await web3.eth.getAccounts();
+    console.log(`Sending transaction from account: ${accounts[0]}`);
+    console.log(`Parameters - NFT Contract Address: ${nft_contract._address}, NFT ID: ${nftId}, Loan Amount: ${loanAmount}, Deadline: ${deadlineTimestamp}`);
+    await makeLoanRequestByNft(nft_contract._address, nftId, loanAmount, deadlineTimestamp, accounts[0]);
+  } catch (error) {
+    console.error("Error making loan by NFT: ", error);
+  }
+
+  closeNftLoanForm();
+});
+
+// Function to make a loan request by NFT
+async function makeLoanRequestByNft(nftContractAddress, nftId, loanAmount, deadline, fromAddress) {
+  try {
+    const response = await defi_contract.methods.makeLoanRequestByNft(nftContractAddress, nftId, loanAmount, deadline)
+      .send({ from: fromAddress });
+    
+    const loanId = response.events.LoanCreatedbyNFT.returnValues.loanId;
+    console.log(loanId);
+    alert(`Created new loan with the id: ${loanId}`);
+  } catch (error) {
+    console.error("Error making loan by NFT: ", error);
+  }    
+}
+
+// Add a button to open the popup form
+document.getElementById('make-loan-request-by-nft-button').addEventListener('click', openNftLoanForm);
 
 // TODO
 async function cancelLoanRequestByNft(nftContract, nftId) {
@@ -721,3 +765,4 @@ window.getRateEthToDex = getRateEthToDex;
 window.openReturnLoanPopup = openReturnLoanPopup;
 window.getAvailableNfts = getAvailableNfts;
 window.totalAmountBorrowedAnNotPaidETH = totalAmountBorrowedAnNotPaidETH;
+window.openNftLoanForm = openNftLoanForm;
