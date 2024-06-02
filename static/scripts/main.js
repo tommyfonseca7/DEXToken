@@ -163,14 +163,17 @@ async function setRateEthToDex(newRate) {
 
 async function getUserLoans() {
   try {
-      if (!defi_contract || !userAccount) {
-          throw new Error("Contract or user account not initialized.");
-      }
+    if (!defi_contract || !userAccount) {
+      throw new Error("Contract or user account not initialized.");
+    }
 
-      const userLoans = await defi_contract.methods.getUserLoans(userAccount).call();
-      displayLoans(userLoans);
+    const userLoans = await defi_contract.methods
+      .getUserLoans(userAccount)
+      .call();
+    console.log("userLoans: ", userLoans);
+    displayLoans(userLoans);
   } catch (error) {
-      console.error("Error fetching user loans:", error);
+    console.error("Error fetching user loans:", error);
   }
 }
 
@@ -179,26 +182,40 @@ function displayLoans(loans) {
   loanList.innerHTML = ""; // Clear previous loans
 
   loans.forEach((loan, index) => {
-      const { borrower, amount, deadline, lender, isBasedNft, nftContract, nftId, repaidAmount } = loan;
+    const {
+      borrower,
+      amount,
+      deadline,
+      lender,
+      isBasedNft,
+      nftContract,
+      nftId,
+      repaidAmount,
+    } = loan;
 
-      const loanElement = document.createElement("div");
-      loanElement.classList.add("loan-item");
-      loanElement.innerHTML = `
+    const loanElement = document.createElement("div");
+    loanElement.classList.add("loan-item");
+    loanElement.innerHTML = `
           <p>Loan ID: ${index}</p>
           <p>Borrower: ${borrower}</p>
-          <p>Amount: ${amount}</p>
-          <p>Deadline: ${new Date(deadline * 1000).toLocaleString()}</p>
+          <p>Amount: ${amount.toString()}</p>
+          <p>Deadline: ${new Date(Number(deadline) * 1000).toLocaleString()}</p>
           <p>Lender: ${lender}</p>
-          <p>Repaid Amount: ${repaidAmount}</p>
-          ${isBasedNft ? `<p>NFT Contract: ${nftContract}</p><p>NFT ID: ${nftId}</p>` : ''}
+          <p>Repaid Amount: ${repaidAmount.toString()}</p>
+          ${
+            isBasedNft
+              ? `<p>NFT Contract: ${nftContract}</p><p>NFT ID: ${nftId.toString()}</p>`
+              : ""
+          }
       `;
-      loanList.appendChild(loanElement);
+    loanList.appendChild(loanElement);
   });
 }
 
 // Add event listener to fetch and display user loans
-document.getElementById("get-user-loans-button").addEventListener("click", getUserLoans);
-
+document
+  .getElementById("get-user-loans-button")
+  .addEventListener("click", getUserLoans);
 
 async function listenToLoanCreation() {
   defi_contract.events
@@ -516,6 +533,8 @@ document
 
     closeForm();
   });
+window.displayLoans = displayLoans;
+window.getUserLoans = getUserLoans;
 window.openForm = openForm;
 window.closeForm = closeForm;
 window.connectMetaMask = connectMetaMask;
