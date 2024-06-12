@@ -1,4 +1,4 @@
-# Decentralized Finance Application - DTI - GROUP 7 - README
+# Decentralized Finance Application - Detection Tolerance Intrusion 
 
 ## How to run the project
 
